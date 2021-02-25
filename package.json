@@ -1,0 +1,24 @@
+{
+  "name": "mic-js",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "webpack": "^5.24.1",
+    "webpack-cli": "^4.5.0"
+  },
+  "dependencies": {
+    "buffer": "^6.0.3",
+    "get-user-media-promise": "^1.1.4",
+    "microphone-stream": "^5.3.1",
+    "node-wav": "0.0.2",
+    "process": "^0.11.10",
+    "util": "^0.12.3"
+  }
+}
