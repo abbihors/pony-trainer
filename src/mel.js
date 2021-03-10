@@ -12,48 +12,97 @@ function hzToMel(freqs) {
     let min_log_mel = (min_log_hz - f_min) / f_sp;
     let logstep = tf.log(6.4).div(27.0);
 
-    console.log(freqs.div(min_log_hz).log().dataSync());
-    mels = mels.where(freqs.less(min_log_hz), freqs.div(min_log_hz).log().div(logstep).add(min_log_mel));
+    // Pick adjusted freqs if above min hz
+    let adjusted_freqs = freqs.div(min_log_hz).log().div(logstep).add(min_log_mel);
+    mels = mels.where(freqs.less(min_log_hz), adjusted_freqs);
 
     return mels;
 }
 
-let res = hzToMel(tf.tensor([11025.0]));
-console.log(res.dataSync());
+// let res = hzToMel(tf.tensor([11025.0]));
+// console.log(res.dataSync());
+
+// Convert mel bin numbers to frequencies
+function melToHz(mels) {
+    let f_min = 0;
+    let f_sp = 200 / 3;
+
+    let freqs = mels.mul(f_sp).add(f_min);
+
+    // Fill in the log scale part
+    let min_log_hz = 1000.0;
+    let min_log_mel = (min_log_hz - f_min) / f_sp;
+    let logstep = tf.log(6.4).div(27.0);
+
+    // Pick adjusted mels
+    let adjusted_mels = mels.sub(min_log_mel).mul(logstep).exp().mul(min_log_hz);
+    freqs = freqs.where(mels.less(min_log_mel), adjusted_mels);
+
+    return freqs;
+}
+
+// res = melToHz(hzToMel(tf.tensor([11025.0])));
+// console.log(res.dataSync());
+
+function melFrequencies(n_mels = 128, fmin = 0.0, fmax = 11025.0) {
+    const min_mel = hzToMel(tf.tensor(fmin)).dataSync();
+    const max_mel = hzToMel(tf.tensor(fmax)).dataSync();
+    
+    let mels = tf.linspace(min_mel, max_mel, n_mels);
+
+    return melToHz(mels);
+}
+
+// console.log(melFrequencies(42).dataSync());
+
+
+function tensorDiff(t) {
+    return t.slice(1).sub(t.slice(0, t.size - 1));
+}
+
+// let t1 = tf.tensor([1, 2, 4, 7, 0]);
+// console.log(tensorDiff(t1).dataSync());
 
 // create mel filter bank
-function mel(sr, n_fft = 2048, n_mels = 128, fmin = 0.0, fmax, htk=false, norm='slaney') {
-    if (fmax == null) {
+function mel(sr, n_fft = 2048, n_mels = 128, fmin = 0.0, fmax, htk = false, norm = 'slaney') {
+    if (fmax === undefined) {
         fmax = sr / 2;
     }
 
     // Initialize weights
-    let weights = tf.zeros([n_mels, 1 + Math.floor(n_fft / 2)]);
+    n_mels = Math.floor(n_mels);
+    // let weights = tf.zeros([n_mels, Math.floor(1 + n_fft / 2)]);
+    let weights = tf.zeros([0]);
 
-    let fftfreqs = tf.linspace(0, sr / 2, 1 + (n_fft / 2));
+    // Center freqs of each FFT bin
+    let fftfreqs = tf.linspace(0, sr / 2, 1 + Math.floor((n_fft / 2)));
+    // console.log(fftfreqs.dataSync());
+
+    // 'Center freqs' of mel bands - uniformly spaced between limits
+    let mel_f = melFrequencies(n_mels + 2, fmin=fmin, fmax=fmax, htk=htk);
+
+    let fdiff = tensorDiff(mel_f);
+    let ramps = tf.sub(tf.transpose(mel_f.reshape([1, mel_f.shape[0]])), fftfreqs);
+    // console.log(ramps.slice([0, 0]));
+
+    for (let i = 0; i < n_mels; i++) {
+        // lower and upper slopes for all bins
+        let lower = ramps.gather(i).div(fdiff.gather(i)).neg();
+        let upper = ramps.gather(i + 2).div(fdiff.gather(i + 1));
+
+        // .. then intersect them with each other and zero
+        let row = tf.maximum(0, tf.minimum(lower, upper));
+        row = row.reshape([1, 1 + Math.floor((n_fft / 2))]);
+        weights = weights.concat([row]);
+    }
+
+    let enorm = tf.div(2, mel_f.slice(2, n_mels).sub(mel_f.slice(0, n_mels)));
+    enorm = enorm.reshape([128, 1]);
+    weights = weights.mul(enorm);
+
+    // weights.print();
+    return weights;
 }
 
-mel(16000);
-
-// low_freq_mel = 0
-// high_freq_mel = (2595 * numpy.log10(1 + (sample_rate / 2) / 700))  # Convert Hz to Mel
-
-// mel_points = numpy.linspace(low_freq_mel, high_freq_mel, nfilt + 2)  # Equally spaced in Mel scale
-// hz_points = (700 * (10**(mel_points / 2595) - 1))  # Convert Mel to Hz
-
-// bin = numpy.floor((NFFT + 1) * hz_points / sample_rate)
-// fbank = numpy.zeros((nfilt, int(numpy.floor(NFFT / 2 + 1))))
-
-// for m in range(1, nfilt + 1):
-//     f_m_minus = int(bin[m - 1])   # left
-//     f_m = int(bin[m])             # center
-//     f_m_plus = int(bin[m + 1])    # right
-
-//     for k in range(f_m_minus, f_m):
-//         fbank[m - 1, k] = (k - bin[m - 1]) / (bin[m] - bin[m - 1])
-//     for k in range(f_m, f_m_plus):
-//         fbank[m - 1, k] = (bin[m + 1] - k) / (bin[m + 1] - bin[m])
-
-// filter_banks = numpy.dot(pow_frames, fbank.T)
-// filter_banks = numpy.where(filter_banks == 0, numpy.finfo(float).eps, filter_banks)  # Numerical Stability
-// filter_banks = 20 * numpy.log10(filter_banks)  # dB
+// console.log(melFrequencies(40 + 2, 0.0, 8000, false).dataSync())
+mel(16000).print();
