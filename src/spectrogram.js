@@ -9,7 +9,12 @@ const sr = wavData.sampleRate;
 const samples = wavData.channelData[0];
 
 let tensor = tf.tensor(samples);
+
+let start = Date.now();
 let mfccs = mfcc(samples, sr, 40);
+let delta = Date.now() - start;
+
+console.log(`MFCC took ${Math.floor(delta / 1000)} seconds`);
 
 console.log(mfccs.shape);
 console.log(mfccs.arraySync()[0]);
