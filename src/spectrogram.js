@@ -1,6 +1,7 @@
 let fs = require('fs');
 let wav = require('node-wav');
 let tf = require('@tensorflow/tfjs');
+let dct = require('dct');
 
 const buf = fs.readFileSync('neigh_sample.wav');
 const wavData = wav.decode(buf);
@@ -38,7 +39,79 @@ function melspectrogram(y, sr = 22050, n_fft = 2048, hopLength = 512, power = 2.
     return tf.dot(melBasis, S);
 }
 
+function log10(x) {
+    let numerator = tf.log(x);
+    let denominator = tf.log(10);
+
+    return numerator.div(denominator);
+}
+
+// def power_to_db(S, ref=1.0, amin=1e-10, top_db=80.0):
+function powerToDb(S, ref = 1.0, amin = 1e-10, topDb = 80.0) {
+    let magnitude = S;
+
+    let refValue = tf.abs(ref);
+
+    // console.log(S.shape)
+
+    let logSpec = tf.mul(10.0, log10(tf.maximum(amin, magnitude)));
+    // logSpec.print()
+    logSpec = logSpec.sub(tf.mul(10.0, log10(tf.maximum(amin, refValue))));
+
+    logSpec = tf.maximum(logSpec, logSpec.max().sub(topDb));
+
+    return logSpec;
+}
+
+function mfcc(y, sr = 22050, n_mfcc = 20, dctType = 2) {
+    // TODO: something is going wrong with either of these toward the end
+    let spec = melspectrogram(y, sr);
+    // spec.print()
+    let S = powerToDb(spec);
+    // S.print()
+
+    // S.print()
+    S = S.transpose();
+    console.log(S.shape);
+    // S.print()
+
+    // Convert tensor into arr since TF doesn't have DCT
+    let arr = S.arraySync();
+    // console.log(arr.slice(0, 1));
+    // console.log(arr.slice(arr.length - 1, arr.length));
+
+    // console.log(arr[0])
+
+    let M = [];
+
+    for (let i = 0; i < arr.length; i++) {
+        let row = dct(arr[i]);
+        
+        row[0] /= Math.sqrt(2);
+        for (let j = 0; j < row.length; j++) {
+            row[j] /= Math.sqrt(2 * row.length);
+        }
+
+        M.push(row);
+    }
+
+    // console.log(M[0])
+
+    let t = tf.tensor(M);
+
+    t = t.transpose();
+
+    console.log(t.arraySync()[0]);
+
+    // M = M.slice(0, 40);
+
+    // console.log(M[0]);
+}
+
 // melspectrogram(samples, sr).print()
+
+// console.log(dct([1,2,3,4]));
+mfcc(samples, sr);
 
 // Convert freqs tensor to mel
 function hzToMel(freqs) {
