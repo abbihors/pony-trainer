@@ -1,76 +1,118 @@
-let getUserMedia = require('get-user-media-promise');
-let MicrophoneStream = require('microphone-stream');
-let wav = require('node-wav');
+// const { performance } = require('perf_hooks');
+let tf = require('@tensorflow/tfjs');
+const FFT = require('fft.js');
 
-console.log('index.js loaded!');
+// Benchmark function f by running it numIters times and printing the
+// average time the function took to run
+function benchmark(numIters, f) {
+    let sum = 0;
 
-document.getElementById('button-start').onclick = function () {
-    // note: for iOS Safari, the constructor must be called in response to a tap, or else the AudioContext will remain
-    // suspended and will not provide any audio data.
-    let micStream = new MicrophoneStream();
+    for (let i = 0; i < numIters; i++) {
+        const t0 = performance.now();
+        f();
+        const t1 = performance.now();
 
-    getUserMedia({ video: false, audio: true })
-        .then(function (stream) {
-            micStream.setStream(stream);
-        }).catch(function (error) {
-            console.log(error);
-        });
+        const delta = t1 - t0;
+        sum += delta;
 
-    let chunks = [];
-
-    // get Buffers (Essentially a Uint8Array DataView of the same Float32 values)
-    micStream.on('data', function (chunk) {
-        // Optionally convert the Buffer back into a Float32Array
-        // (This actually just creates a new DataView - the underlying audio data is not copied or modified.)
-        let rawChunk = MicrophoneStream.toRaw(chunk);
-
-        chunks.push(rawChunk);
-
-        // Stop after we've collected 1 second of audio
-        if ((chunks.length * rawChunk.length) > micStream.context.sampleRate) {
-            console.log('got 1 second');
-            console.log(chunks.length);
-
-            // create a new buffer to hold all chunks
-            let tmpRecording = new Float32Array(chunks.length * rawChunk.length);
-
-            // put all the chunks in one buffer
-            for (let i = 0; i < chunks.length; i++) {
-                tmpRecording.set(chunks[i], i * rawChunk.length);
-            }
-
-            // include only 1 second of audio
-            let recording = tmpRecording.slice(0, micStream.context.sampleRate);
-
-            chunks = [];
-
-            micStream.stop();
-
-            // write to file
-            let wavBuf = wav.encode([recording], { sampleRate: 44100, float: true, bitDepth: 32 });
-
-            let decoded = wav.decode(wavBuf);
-            console.log(decoded.sampleRate);
-            console.log(decoded.channelData);
-
-            const downloadLink = document.getElementById('download');
-
-            // BLOB CONSTRUCTOR TAKES AN ARRAY OF DATA ARRAYS WOW
-            b = new Blob([wavBuf], { type: 'audio/wav' });
-            downloadLink.href = URL.createObjectURL(b);
-            downloadLink.download = 'js-recording.wav';
+        // Print an estimate for the total benchmark time after 10 iters
+        if (i === 10) {
+            const estimate = (sum / i) * (numIters - i);
+            const estimateSecs = (estimate / 1000).toFixed(1);
+            console.log(`estimated benchmark time: ${estimateSecs} s`);
         }
+    }
 
-        // micStream.stop();
-    });
-
-    // It also emits a format event with various details (frequency, channels, etc)
-    micStream.on('format', function (format) {
-        console.log(format);
-    });
-
-    // Stop when ready
-    document.getElementById('button-stop').onclick = function () {
-        micStream.stop();
-    };
+    const avgTime = sum / numIters;
+    const avgMs = avgTime.toFixed(2);
+    
+    console.log(`'${f.name}' took ${avgMs} ms over ${numIters} iterations`);
 }
+
+function foobar() {
+    let sum = 1;
+
+    for (let i = 0; i < 10000000; i++) {
+        sum += i * sum;
+    }
+
+    return sum;
+}
+
+// benchmark(100, foobar);
+
+let sr = 4096;
+let arr = [];
+
+
+let input = new Array(4096);
+// input.fill(0);
+
+for (let i = 0; i < sr; i++) {
+    input[i] = Math.random();
+}
+
+const f = new FFT(512);
+// const input = new Array(4096);
+// const realInput = new Array(f.size);
+// f.realTransform(out, arr);
+const out = f.createComplexArray();
+
+// for (let i = 0; i < sr; i++) {
+//     arr.push(Math.random());
+// }
+
+function stft(    signal, frameLength, frameStep, fftLength,    signalWindow = tf.signal.hannWindow) {
+    // I removed fftlength check for simplicity
+    const framedSignal = tf.signal.frame(signal, frameLength, frameStep);
+    const windowedSignal = tf.mul(framedSignal, signalWindow(fftLength));
+
+    return  tf.spectral.rfft(windowedSignal, frameLength);
+}
+
+function fftjs_stft(    signal, frameLength, frameStep, fftLength,    signalWindow = tf.signal.hannWindow) {
+    const framedSignal = tf.signal.frame(signal, frameLength, frameStep);
+    const windowedSignal = tf.mul(framedSignal, signalWindow(fftLength));
+
+    let framed = windowedSignal.arraySync();
+
+    const f = new FFT(512);
+    let out = f.createComplexArray();
+
+    let out_arr = [];
+
+    for (let frame of framed) {
+        f.realTransform(out, frame);
+        out_arr.push(out);
+    }
+
+    return out_arr;
+}
+
+let t = tf.tensor(input);
+
+let start = Date.now();
+let out2 = fftjs_stft(t, 512, 512/4, 512);
+// f.realTransform(out, input);
+// f.completeSpectrum(out);
+let delta = Date.now() - start;
+console.log(`FFT.js took: ${delta} ms`);
+
+
+let start2 = Date.now();
+let ft = tf.signal.stft(t, 512, 512 / 4, 512);
+let delta2 = Date.now() - start2;
+console.log(`tf.js took: ${delta2} ms`);
+
+
+let start3 = performance.now();
+let ft2 = stft(t, 512, 512/4, 512);
+let delta3 = performance.now() - start3;
+console.log(`modified tf.js took: ${delta3} ms`);
+
+console.log(out2)
+
+console.log(ft.shape)
+console.log(ft2.shape)
+ft2.print()
+// console.log(tf.real(ft2).arraySync())
