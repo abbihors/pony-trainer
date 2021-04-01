@@ -6,6 +6,8 @@ let dct = require('dct'); // TODO: replace w/ something better?
 // const buf = fs.readFileSync('neigh_sample.wav');
 // const wavData = wav.decode(buf);
 
+// const sr = wavData.sampleRate;
+// const samples = wavData.channelData[0];
 
 let sr = 16000;
 let samples = new Array(16000);
@@ -14,10 +16,11 @@ for (let i = 0; i < sr; i++) {
     samples[i] = Math.random();
 }
 
-// const sr = wavData.sampleRate;
-// const samples = wavData.channelData[0];
+let mfcc_count = 512;
 
-let cachedMel = mel(sr, 2048);
+let cachedMel = mel(sr, mfcc_count);
+
+// tf.enableProdMode();
 
 let tensor = tf.tensor(samples);
 console.log(`tf backend: ${tf.getBackend()}`); // has to be run after 1st op
@@ -42,25 +45,14 @@ function stft(signal, frameLength, frameStep, fftLength, signalWindow = tf.signa
 
 // Compute magnitude spectrogram (periodogram) for samples
 function spectrogram(samples, n_fft = 2048, hop_length = n_fft / 4, power = 1) {
-    // Pad
     const pad_length = Math.floor(n_fft / 2);
     let padded = tf.mirrorPad(samples, [[pad_length, pad_length]], 'reflect');
-
-    // console.log(padded.shape)
-
-    // Run STFT
-    // let res = tf.signal.stft(padded, 2048, 512, 2048);
     
     let res = stft(padded, n_fft, hop_length, n_fft);
-    
-    
-    let t0 = performance.now()
-    // res = res.abs().transpose().pow(2);
+
     res = res.abs(); // Discard imaginary part
     res = res.transpose(); // Transpose to match librosa
-    res = res.pow(2); // 300 ms, why?
-    let t1 = performance.now();
-    console.log(`spectro ops took: ${t1 - t0} ms`);
+    res = res.pow(2);
 
     return res;
 }
@@ -100,7 +92,7 @@ function powerToDb(S, ref = 1.0, amin = 1e-10, topDb = 80.0) {
 
 function mfcc(y, sr = 22050, n_mfcc = 20, dctType = 2) {
     let t0 = performance.now();
-    let spec = melspectrogram(y, sr);
+    let spec = melspectrogram(y, sr, mfcc_count);
     let t1 = performance.now();
     // console.log(`melspec() took ${t1 - t0} ms`);
     let S = powerToDb(spec);
@@ -183,6 +175,7 @@ function tensorDiff(t) {
 }
 
 // create mel filter bank
+// probably shouldnt be using concat with tensors, this function is hella slow
 function mel(sr, n_fft = 2048, n_mels = 128, fmin = 0.0, fmax, htk = false, norm = 'slaney') {
     if (fmax === undefined) {
         fmax = sr / 2;
