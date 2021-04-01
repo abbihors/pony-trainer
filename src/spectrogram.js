@@ -1,44 +1,80 @@
-let fs = require('fs');
-let wav = require('node-wav');
+// let fs = require('fs');
+// let wav = require('node-wav');
 let tf = require('@tensorflow/tfjs');
 let dct = require('dct'); // TODO: replace w/ something better?
 
-const buf = fs.readFileSync('neigh_sample.wav');
-const wavData = wav.decode(buf);
-const sr = wavData.sampleRate;
-const samples = wavData.channelData[0];
+// const buf = fs.readFileSync('neigh_sample.wav');
+// const wavData = wav.decode(buf);
+
+
+let sr = 16000;
+let samples = new Array(16000);
+
+for (let i = 0; i < sr; i++) {
+    samples[i] = Math.random();
+}
+
+// const sr = wavData.sampleRate;
+// const samples = wavData.channelData[0];
+
+let cachedMel = mel(sr, 2048);
 
 let tensor = tf.tensor(samples);
+console.log(`tf backend: ${tf.getBackend()}`); // has to be run after 1st op
 
-let start = Date.now();
-let mfccs = mfcc(samples, sr, 40);
-let delta = Date.now() - start;
+let start = performance.now();
 
-console.log(`MFCC took ${Math.floor(delta / 1000)} seconds`);
+let mfccs = mfcc(tensor, sr, 40);
+
+let delta = performance.now() - start;
+console.log(`MFCC took ${delta} ms`);
 
 console.log(mfccs.shape);
-console.log(mfccs.arraySync()[0]);
+console.log(mfccs.arraySync());
+
+function stft(signal, frameLength, frameStep, fftLength, signalWindow = tf.signal.hannWindow) {
+    // I removed fftlength check for simplicity
+    const framedSignal = tf.signal.frame(signal, frameLength, frameStep);
+    const windowedSignal = tf.mul(framedSignal, signalWindow(fftLength));
+
+    return  tf.spectral.rfft(windowedSignal, frameLength);
+}
 
 // Compute magnitude spectrogram (periodogram) for samples
-function spectrogram(samples, n_fft = 2048, hop_length = 512, power = 1) {
+function spectrogram(samples, n_fft = 2048, hop_length = n_fft / 4, power = 1) {
     // Pad
     const pad_length = Math.floor(n_fft / 2);
     let padded = tf.mirrorPad(samples, [[pad_length, pad_length]], 'reflect');
 
-    // Run STFT
-    let res = tf.signal.stft(padded, 2048, 512, 2048);
+    // console.log(padded.shape)
 
+    // Run STFT
+    // let res = tf.signal.stft(padded, 2048, 512, 2048);
+    
+    let res = stft(padded, n_fft, hop_length, n_fft);
+    
+    
+    let t0 = performance.now()
+    // res = res.abs().transpose().pow(2);
     res = res.abs(); // Discard imaginary part
     res = res.transpose(); // Transpose to match librosa
-    res = res.pow(2);
+    res = res.pow(2); // 300 ms, why?
+    let t1 = performance.now();
+    console.log(`spectro ops took: ${t1 - t0} ms`);
 
     return res;
 }
 
-function melspectrogram(y, sr = 22050, n_fft = 2048, hopLength = 512, power = 2.0) {
+function melspectrogram(y, sr = 22050, n_fft = 2048, hopLength = n_fft / 4, power = 2.0) {
+    let t0 = performance.now();
     let S = spectrogram(y, n_fft, hopLength, power);
+    let t1 = performance.now();
+    console.log(`spectrogram took: ${t1 - t0} ms`);
 
-    let melBasis = mel(sr, n_fft);
+    // console.log('doing mel filters');
+
+    let melBasis = cachedMel;
+
 
     return tf.dot(melBasis, S);
 }
@@ -63,13 +99,18 @@ function powerToDb(S, ref = 1.0, amin = 1e-10, topDb = 80.0) {
 }
 
 function mfcc(y, sr = 22050, n_mfcc = 20, dctType = 2) {
+    let t0 = performance.now();
     let spec = melspectrogram(y, sr);
+    let t1 = performance.now();
+    // console.log(`melspec() took ${t1 - t0} ms`);
     let S = powerToDb(spec);
     S = S.transpose();
 
     // Convert tensor into arr since TF doesn't have DCT
     let arr = S.arraySync();
     let M = [];
+
+    // console.log('doing dct and sqrt on rows');
 
     for (let i = 0; i < arr.length; i++) {
         let row = dct(arr[i]);
@@ -81,6 +122,8 @@ function mfcc(y, sr = 22050, n_mfcc = 20, dctType = 2) {
 
         M.push(row);
     }
+
+    // console.log('done, transpoding');
 
     let t = tf.tensor(M);
     t = t.transpose();
