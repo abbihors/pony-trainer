@@ -83,10 +83,12 @@ async function loadBufferOffline(url) {
         .then(buffer => offlineCtx.decodeAudioData(buffer));
 }
 
+// TODO: add centering like in librosa?
 function stft(y, fftSize = 2048, hopSize = fftSize / 4) {
     // Split the input buffer into sub-buffers of size fftSize.
     const bufferCount = Math.floor((y.length - fftSize) / hopSize) + 1;
-    let matrix = range(bufferCount).map(x => new Float32Array(fftSize));
+    // create 28x2050 (i.e. 28x1025) buffers
+    let matrix = range(bufferCount).map(x => new Float32Array(fftSize + 2));
     for (let i = 0; i < bufferCount; i++) {
         const ind = i * hopSize;
         const buffer = y.slice(ind, ind + fftSize);
@@ -101,7 +103,8 @@ function stft(y, fftSize = 2048, hopSize = fftSize / 4) {
         const fft_res = fft(winBuffer);
         // TODO: Understand why fft output is 2 larger than expected (eg. 1026
         // rather than 1024).
-        matrix[i].set(fft_res.slice(0, fftSize));
+        // matrix[i].set(fft_res.slice(0, fftSize));
+        matrix[i].set(fft_res);
     }
     return matrix;
 }
