@@ -30,10 +30,12 @@ loadExampleBuffer().then(audioBuffer => {
     // let fft_data = fft(samples);
     // console.log(fft_data);
 
-    // match: librosa.stft(s, 2048, 2048//4, 2048, center=False).T
-    let t0 = Date.now();        
+    // match: librosa.stft(s, 2048, 2048//4, 2048, center=True).T
+    let t0 = performance.now();        
+    samples = reflectPad(samples, 1024);
+    
     let res = stft(samples, 2048, 512);
-    console.log(`took: ${Date.now() - t0} ms`);
+    console.log(`stft took: ${performance.now() - t0} ms`);
 
     console.log(res);
 
@@ -83,8 +85,26 @@ async function loadBufferOffline(url) {
         .then(buffer => offlineCtx.decodeAudioData(buffer));
 }
 
+// Reflect pad amount on both sides of arr. This shouldn't have to be
+// too fast because it's only run once per sample.
+function reflectPad(arr, amount) {
+    let newArr = new Float32Array(arr.length + amount * 2)
+
+    // Reflect start and end
+    for (let i = 0; i < amount; i++) {
+        newArr[amount - i - 1] = arr[i + 1];
+        newArr[newArr.length + i - amount] = arr[arr.length - i - 2];
+    }
+
+    // Copy the middle
+    newArr.set(arr, amount);
+
+    return newArr;
+}
+
 // TODO: add centering like in librosa?
 function stft(y, fftSize = 2048, hopSize = fftSize / 4) {
+    // console.log(`y size: ${y.length}, fftSize: ${fftSize}, hopSize: ${hopSize}`);
     // Split the input buffer into sub-buffers of size fftSize.
     const bufferCount = Math.floor((y.length - fftSize) / hopSize) + 1;
     // create 28x2050 (i.e. 28x1025) buffers
@@ -101,9 +121,6 @@ function stft(y, fftSize = 2048, hopSize = fftSize / 4) {
         const win = hannWindow(buffer.length);
         const winBuffer = applyWindow(buffer, win);
         const fft_res = fft(winBuffer);
-        // TODO: Understand why fft output is 2 larger than expected (eg. 1026
-        // rather than 1024).
-        // matrix[i].set(fft_res.slice(0, fftSize));
         matrix[i].set(fft_res);
     }
     return matrix;
