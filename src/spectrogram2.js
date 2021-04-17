@@ -16,7 +16,7 @@ for (let i = 0; i < SAMPLE_RATE; i++) {
 // console.log(hzs);
 
 let t0 = performance.now();
-melFilterBank = createMelFilterbank(22050, 2048, 10);
+melFilterBank = createMelFilterbank(SAMPLE_RATE, N_FFT, 10);
 console.log(`filterbank took: ${performance.now() - t0} ms`);
 console.log(melFilterBank);
 
@@ -191,13 +191,13 @@ function createMelFilterbank(
     fftSize = 2048,
     melCount = 128, // example uses 40 mels
     lowHz = 0.0, // 300 might work better
-    highHz = sr / 2,
-    norm = 1
+    highHz = sr / 2
 ) {
     const hzs = melFrequencies(melCount + 2, lowHz, highHz);
     
     // Go from hz to the corresponding bin in the FFT
     const bins = hzs.map(hz => freqToBin(hz, fftSize));
+    console.log(bins);
 
     // Now that we have the start and end frequencies, create each triangular
     // window (each value in [0, 1]) that we will apply to an FFT later. These
@@ -210,34 +210,24 @@ function createMelFilterbank(
         filters[i] = triangleWindow(fftSize + 2, bins[i], bins[i + 1], bins[i + 2]);
     }
 
-    // if norm == 1:
-    //     # Slaney-style mel is scaled to be approx constant energy per channel
-    //     enorm = 2.0 / (mel_f[2:n_mels+2] - mel_f[:n_mels])
-    //     weights *= enorm[:, np.newaxis]
-
-    if (norm) {
-        // const enorm = 2.0 / (filters.slice(2, melCount + 2) - filters.slice(0, melCount));
-        // filters.map()
-    }
-
     return filters;
 }
 
-/**
- * Creates a triangular window.
- */
 function triangleWindow(length, startIndex, peakIndex, endIndex) {
     const win = new Float32Array(length);
     const deltaUp = 1.0 / (peakIndex - startIndex);
+    const deltaDown = 1.0 / (endIndex - peakIndex);
+
     for (let i = startIndex; i < peakIndex; i++) {
         // Linear ramp up between start and peak index (values from 0 to 1).
         win[i] = (i - startIndex) * deltaUp;
     }
-    const deltaDown = 1.0 / (endIndex - peakIndex);
+    
     for (let i = peakIndex; i < endIndex; i++) {
         // Linear ramp down between peak and end index (values from 1 to 0).
         win[i] = 1 - (i - peakIndex) * deltaDown;
     }
+    
     return win;
 }
 
