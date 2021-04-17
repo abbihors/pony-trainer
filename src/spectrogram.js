@@ -16,9 +16,8 @@ for (let i = 0; i < sr; i++) {
     samples[i] = Math.random();
 }
 
-let mfcc_count = 512;
-
-let cachedMel = mel(sr, mfcc_count);
+let cachedMel = mel(sr, 2048, n_mels = 128);
+cachedMel.print();
 
 // tf.enableProdMode();
 
@@ -188,8 +187,10 @@ function mel(sr, n_fft = 2048, n_mels = 128, fmin = 0.0, fmax, htk = false, norm
     // Center freqs of each FFT bin
     let fftfreqs = tf.linspace(0, sr / 2, 1 + Math.floor((n_fft / 2)));
 
-    // 'Center freqs' of mel bands - uniformly spaced between limits
-    let mel_f = melFrequencies(n_mels + 2, fmin = fmin, fmax = fmax, htk = htk);
+    // Creates an linearly spaced array between mel(fmin) and mel(fmax),
+    // with n_mels+2 buckets in total. These are then converted back
+    // into frequencies.
+    let mel_f = melFrequencies(n_mels + 2, fmin = fmin, fmax = fmax);
 
     let fdiff = tensorDiff(mel_f);
     let ramps = tf.sub(tf.transpose(mel_f.reshape([1, mel_f.shape[0]])), fftfreqs);

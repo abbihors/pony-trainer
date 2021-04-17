@@ -2,19 +2,23 @@ const KissFFT = require('kissfft-js');
 const DCT = require('dct');
 
 const SAMPLE_RATE = 16000;
-let sr = 16000;
-let samples = new Array(sr);
-let context = null;
+const N_FFT = 2048;
+const MEL_COUNT = 128;
 
-for (let i = 0; i < sr; i++) {
+let samples = new Array(SAMPLE_RATE);
+let context = null; // ?
+
+for (let i = 0; i < SAMPLE_RATE; i++) {
     samples[i] = Math.random() * 2 - 1;
 }
 
-// let t0 = Date.now();
-// let res = fft(samples);
-// console.log(`took: ${Date.now() - t0} ms`);
+// const hzs = melFrequencies(5, 0, 11025);
+// console.log(hzs);
 
-// console.log(res);
+let t0 = performance.now();
+melFilterBank = createMelFilterbank(22050, 2048, 10);
+console.log(`filterbank took: ${performance.now() - t0} ms`);
+console.log(melFilterBank);
 
 function fft(y) {
     const fftr = new KissFFT.FFTR(y.length);
@@ -31,9 +35,7 @@ loadExampleBuffer().then(audioBuffer => {
     // console.log(fft_data);
 
     // match: librosa.stft(s, 2048, 2048//4, 2048, center=True).T
-    let t0 = performance.now();        
-    samples = reflectPad(samples, 1024);
-    
+    let t0 = performance.now();
     let res = stft(samples, 2048, 512);
     console.log(`stft took: ${performance.now() - t0} ms`);
 
@@ -102,16 +104,19 @@ function reflectPad(arr, amount) {
     return newArr;
 }
 
-// TODO: add centering like in librosa?
 function stft(y, fftSize = 2048, hopSize = fftSize / 4) {
-    // console.log(`y size: ${y.length}, fftSize: ${fftSize}, hopSize: ${hopSize}`);
+    const padLength = Math.floor(fftSize / 2);
+    const padded = reflectPad(y, padLength);
+
     // Split the input buffer into sub-buffers of size fftSize.
-    const bufferCount = Math.floor((y.length - fftSize) / hopSize) + 1;
+    const bufferCount = Math.floor((padded.length - fftSize) / hopSize) + 1;
+
     // create 28x2050 (i.e. 28x1025) buffers
     let matrix = range(bufferCount).map(x => new Float32Array(fftSize + 2));
     for (let i = 0; i < bufferCount; i++) {
         const ind = i * hopSize;
-        const buffer = y.slice(ind, ind + fftSize);
+        const buffer = padded.slice(ind, ind + fftSize);
+
         // In the end, we will likely have an incomplete buffer, which we should
         // just ignore.
         if (buffer.length != fftSize) {
@@ -121,8 +126,10 @@ function stft(y, fftSize = 2048, hopSize = fftSize / 4) {
         const win = hannWindow(buffer.length);
         const winBuffer = applyWindow(buffer, win);
         const fft_res = fft(winBuffer);
+
         matrix[i].set(fft_res);
     }
+
     return matrix;
 }
 
@@ -161,5 +168,103 @@ function applyWindow(buffer, win) {
     for (let i = 0; i < buffer.length; i++) {
         out[i] = win[i] * buffer[i];
     }
+    return out;
+}
+
+// Creates a linearly spaced array between mel(lowHz) and mel(highHz),
+// with melCount+2 buckets in total. These are then converted back into
+// frequencies. This is producting ever so slightly different results
+// compared to librosa (floating point rounding on the end) but its
+// probably fine.
+function melFrequencies(melCount, lowHz, highHz) {
+    const lowMel = hzToMel(lowHz);
+    const highMel = hzToMel(highHz);
+
+    const mels = linearSpace(lowMel, highMel, melCount);
+    const melFreqs = mels.map(mel => melToHz(mel));
+
+    return melFreqs;
+}
+
+function createMelFilterbank(
+    sr,
+    fftSize = 2048,
+    melCount = 128, // example uses 40 mels
+    lowHz = 0.0, // 300 might work better
+    highHz = sr / 2,
+    norm = 1
+) {
+    const hzs = melFrequencies(melCount + 2, lowHz, highHz);
+    
+    // Go from hz to the corresponding bin in the FFT
+    const bins = hzs.map(hz => freqToBin(hz, fftSize));
+
+    // Now that we have the start and end frequencies, create each triangular
+    // window (each value in [0, 1]) that we will apply to an FFT later. These
+    // are mostly sparse, except for the values of the triangle
+    const length = bins.length - 2;
+    const filters = [];
+
+    for (let i = 0; i < length; i++) {
+        // Now generate the triangles themselves
+        filters[i] = triangleWindow(fftSize + 2, bins[i], bins[i + 1], bins[i + 2]);
+    }
+
+    // if norm == 1:
+    //     # Slaney-style mel is scaled to be approx constant energy per channel
+    //     enorm = 2.0 / (mel_f[2:n_mels+2] - mel_f[:n_mels])
+    //     weights *= enorm[:, np.newaxis]
+
+    if (norm) {
+        // const enorm = 2.0 / (filters.slice(2, melCount + 2) - filters.slice(0, melCount));
+        // filters.map()
+    }
+
+    return filters;
+}
+
+/**
+ * Creates a triangular window.
+ */
+function triangleWindow(length, startIndex, peakIndex, endIndex) {
+    const win = new Float32Array(length);
+    const deltaUp = 1.0 / (peakIndex - startIndex);
+    for (let i = startIndex; i < peakIndex; i++) {
+        // Linear ramp up between start and peak index (values from 0 to 1).
+        win[i] = (i - startIndex) * deltaUp;
+    }
+    const deltaDown = 1.0 / (endIndex - peakIndex);
+    for (let i = peakIndex; i < endIndex; i++) {
+        // Linear ramp down between peak and end index (values from 1 to 0).
+        win[i] = 1 - (i - peakIndex) * deltaDown;
+    }
+    return win;
+}
+
+// HTK-style conversion
+function hzToMel(hz) {
+    return 2595.0 * Math.log10(1 + hz / 700);
+}
+
+function melToHz(mel) {
+    return 700.0 * (10.0 ** (mel / 2595.0) - 1.0);
+}
+
+function freqToBin(freq, fftSize, sr = SAMPLE_RATE) {
+    return Math.floor((fftSize + 1) * freq / sr);
+}
+
+// Returns amount elements evenly spaced between start and end, including end
+function linearSpace(start, end, amount) {
+    const delta = (end - start) / (amount - 1);
+
+    let out = [];
+
+    for (let i = 0; i < amount - 1; i++) {
+        out[i] = start + delta * i;
+    }
+
+    out.push(end);
+
     return out;
 }
