@@ -16,7 +16,7 @@ for (let i = 0; i < SAMPLE_RATE; i++) {
 // console.log(hzs);
 
 let t0 = performance.now();
-melFilterBank = createMelFilterbank(SAMPLE_RATE, N_FFT, 10);
+melFilterBank = createMelFilterbank(SAMPLE_RATE, N_FFT, MEL_COUNT);
 console.log(`filterbank took: ${performance.now() - t0} ms`);
 console.log(melFilterBank);
 
@@ -171,11 +171,8 @@ function applyWindow(buffer, win) {
     return out;
 }
 
-// Creates a linearly spaced array between mel(lowHz) and mel(highHz),
-// with melCount+2 buckets in total. These are then converted back into
-// frequencies. This is producting ever so slightly different results
-// compared to librosa (floating point rounding on the end) but its
-// probably fine.
+// Creates melCount linearly spaced mel frequencies between lowHz and
+// highHz
 function melFrequencies(melCount, lowHz, highHz) {
     const lowMel = hzToMel(lowHz);
     const highMel = hzToMel(highHz);
@@ -194,20 +191,13 @@ function createMelFilterbank(
     highHz = sr / 2
 ) {
     const hzs = melFrequencies(melCount + 2, lowHz, highHz);
-    
-    // Go from hz to the corresponding bin in the FFT
     const bins = hzs.map(hz => freqToBin(hz, fftSize));
-    console.log(bins);
 
-    // Now that we have the start and end frequencies, create each triangular
-    // window (each value in [0, 1]) that we will apply to an FFT later. These
-    // are mostly sparse, except for the values of the triangle
     const length = bins.length - 2;
     const filters = [];
 
     for (let i = 0; i < length; i++) {
-        // Now generate the triangles themselves
-        filters[i] = triangleWindow(fftSize + 2, bins[i], bins[i + 1], bins[i + 2]);
+        filters[i] = triangleWindow(fftSize / 2 + 1, bins[i], bins[i + 1], bins[i + 2]);
     }
 
     return filters;
