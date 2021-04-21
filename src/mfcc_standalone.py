@@ -79,6 +79,9 @@ def power_to_db(S, ref=1.0, amin=1e-10, top_db=80.0):
     else:
         ref_value = np.abs(ref)
 
+    # print(S)
+    print(S.shape)
+
     log_spec = 10.0 * np.log10(np.maximum(amin, magnitude))
     log_spec -= 10.0 * np.log10(np.maximum(amin, ref_value))
 
@@ -305,7 +308,7 @@ def _spectrogram(
                     pad_mode=pad_mode,
                 )
             )
-            ** power
+            ** power # pow is 2 here!!!
         )
 
     return S, n_fft
@@ -413,16 +416,12 @@ def mel(
 
     # Center freqs of each FFT bin
     fftfreqs = fft_frequencies(sr=sr, n_fft=n_fft)
-    print(fftfreqs)
 
     # 'Center freqs' of mel bands - uniformly spaced between limits
     mel_f = mel_frequencies(n_mels + 2, fmin=fmin, fmax=fmax, htk=htk)
 
     fdiff = np.diff(mel_f)
     ramps = np.subtract.outer(mel_f, fftfreqs)
-    print(ramps.shape)
-    print(n_mels)
-    print(weights.shape)
 
     for i in range(n_mels):
         # lower and upper slopes for all bins
@@ -432,18 +431,14 @@ def mel(
         # .. then intersect them with each other and zero
         weights[i] = np.maximum(0, np.minimum(lower, upper))
 
-    # print(weights)
 
     if norm == "slaney":
         # Slaney-style mel is scaled to be approx constant energy per channel
         enorm = 2.0 / (mel_f[2 : n_mels + 2] - mel_f[:n_mels])
         weights *= enorm[:, np.newaxis]
-        # print(weights.shape)
-        # print(enorm[:, np.newaxis].shape)
     else:
         weights = normalize(weights, norm=norm, axis=-1)
 
-    print(weights)
     return weights
 
 def melspectrogram(
@@ -471,16 +466,23 @@ def melspectrogram(
         pad_mode=pad_mode,
     )
 
+    print(S.shape)
+
     # Build a Mel filter
     mel_basis = mel(sr, n_fft, **kwargs)
 
     return np.dot(mel_basis, S)
+
+# print(_spectrogram(samples, sr));
 
 def mfcc(
     y=None, sr=22050, S=None, n_mfcc=20, dct_type=2, norm="ortho", lifter=0, **kwargs
 ):
     if S is None:
         S = power_to_db(melspectrogram(y=y, sr=sr, **kwargs))
+
+    # print(S)
+    # print(S.shape)
 
     M = scipy.fftpack.dct(S, axis=0, type=dct_type, norm=norm)[:n_mfcc]
 

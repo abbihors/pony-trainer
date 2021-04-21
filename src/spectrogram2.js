@@ -8,6 +8,7 @@ const MEL_COUNT = 128;
 let samples = new Array(SAMPLE_RATE);
 let context = null; // ?
 
+// Generate a random audio buffer with values from -1 to 1
 for (let i = 0; i < SAMPLE_RATE; i++) {
     samples[i] = Math.random() * 2 - 1;
 }
@@ -36,7 +37,8 @@ loadExampleBuffer().then(audioBuffer => {
 
     // match: librosa.stft(s, 2048, 2048//4, 2048, center=True).T
     let t0 = performance.now();
-    let res = stft(samples, 2048, 512);
+    // let res = stft(samples, 2048, 512);
+    let res = magSpectrogram(samples, 2048, 512);
     console.log(`stft took: ${performance.now() - t0} ms`);
 
     console.log(res);
@@ -133,6 +135,27 @@ function stft(y, fftSize = 2048, hopSize = fftSize / 4) {
     return matrix;
 }
 
+function square(x) {
+    return x * x;
+}
+
+// Computes a magnitude spectrogram of the input.
+// This is equivalent to 2 ** np.abs(stft()), where np.abs is sqrt(a^2 + b^2)
+// equivalent librosa call: 
+// librosa.core.spectrum._spectrogram(y=y, n_fft=2048, hop_length=512, power=2, center=True)[0].T
+function magSpectrogram(y, fftSize = 2048, hopLength = fftSize / 4) {
+    const freqData = stft(y, fftSize, hopLength);
+
+    return freqData.map(fft => {
+        let out = new Float32Array(fft.length / 2);
+
+        for (let i = 0; i < fft.length / 2; i++) {
+            out[i] = square(fft[i * 2]) + square(fft[i * 2 + 1]);
+        }
+
+        return out;
+    });
+}
 
 function sum(array) {
     return array.reduce(function (a, b) { return a + b; });
@@ -212,12 +235,12 @@ function triangleWindow(length, startIndex, peakIndex, endIndex) {
         // Linear ramp up between start and peak index (values from 0 to 1).
         win[i] = (i - startIndex) * deltaUp;
     }
-    
+
     for (let i = peakIndex; i < endIndex; i++) {
         // Linear ramp down between peak and end index (values from 1 to 0).
         win[i] = 1 - (i - peakIndex) * deltaDown;
     }
-    
+
     return win;
 }
 
