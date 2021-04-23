@@ -3,7 +3,10 @@ const DCT = require('dct');
 
 const SAMPLE_RATE = 16000;
 const N_FFT = 2048;
-const MEL_COUNT = 128;
+const MEL_COUNT = 26;
+const MFCC_COUNT = 40;
+
+console.log(DCT([1, 2, 3, 4, 5]));
 
 let samples = new Array(SAMPLE_RATE);
 let context = null; // ?
@@ -28,6 +31,19 @@ function fft(y) {
     return transform;
 }
 
+function mfcc(s) {
+    let res = magSpectrogram(s, 2048, 512);
+
+    out = [];
+
+    for (let i = 0; i < res.length; i++) {
+        let filtered = applyFilterbank(res[i], melFilterBank)
+        out[i] = DCT(filtered);
+    }
+
+    return out;
+}
+
 // loadBuffer(fileUrl).then(audioBuffer => {
 loadExampleBuffer().then(audioBuffer => {
     let samples = audioBuffer.getChannelData(0);
@@ -38,11 +54,11 @@ loadExampleBuffer().then(audioBuffer => {
     // match: librosa.stft(s, 2048, 2048//4, 2048, center=True).T
     let t0 = performance.now();
     // let res = stft(samples, 2048, 512);
-    let res = magSpectrogram(samples, 2048, 512);
-    console.log(`stft took: ${performance.now() - t0} ms`);
+    // let res = magSpectrogram(samples, 2048, 512);
+    let res = mfcc(samples).slice(0, 40);
 
     console.log(res);
-
+    console.log(`mfcc took: ${performance.now() - t0} ms`);
 });
 
 const loadEl = document.querySelector('#load');
@@ -158,7 +174,15 @@ function magSpectrogram(y, fftSize = 2048, hopLength = fftSize / 4) {
 }
 
 function sum(array) {
-    return array.reduce(function (a, b) { return a + b; });
+    return array.reduce((a, b) => { return a + b; });
+}
+
+// Use a lower minimum value for energy.
+const MIN_VAL = -10;
+function logGtZero(val) {
+    // Ensure that the log argument is nonnegative.
+    // const offset = Math.exp(MIN_VAL);
+    return Math.log(val);
 }
 
 function range(count) {
@@ -177,20 +201,30 @@ function hannWindow(length) {
     return win;
 }
 
-/**
- * Applies a window to a buffer (point-wise multiplication).
- */
-function applyWindow(buffer, win) {
-    if (buffer.length != win.length) {
-        console.error(`Buffer length ${buffer.length} != window length
-        ${win.length}.`);
-        return;
+function applyFilterbank(fftEnergies, filterbank) {
+    // Apply each filter to the whole FFT signal to get one value.
+    let out = new Float32Array(filterbank.length);
+
+    for (let i = 0; i < filterbank.length; i++) {
+        // To calculate filterbank energies we multiply each filterbank with the
+        // power spectrum.
+        const win = applyWindow(fftEnergies, filterbank[i]);
+
+        // Then add up the coefficents, and take the log.
+        out[i] = logGtZero(sum(win));
     }
 
+    return out;
+}
+
+// Point-wise multiplication between two 1D arrays
+function applyWindow(buffer, win) {
     let out = new Float32Array(buffer.length);
+
     for (let i = 0; i < buffer.length; i++) {
         out[i] = win[i] * buffer[i];
     }
+
     return out;
 }
 

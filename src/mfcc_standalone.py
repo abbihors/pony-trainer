@@ -505,9 +505,11 @@ def mfcc(
 
 
 np.random.seed(42)
-random_samples = np.random.uniform(0, 1, 1000)
-mfccs = mfcc(y=random_samples, sr=16000, n_mfcc=40)
-# print(mfccs)
+# random_samples = np.random.uniform(0, 1, 1000)
+import librosa
+s, sr = librosa.load('src/neigh_sample.wav', sr=16000)
+mfccs = mfcc(y=s, sr=16000, n_mfcc=400)
+print(mfccs.shape)
 
 # print(mel_frequencies(40 + 2, fmin=0.0, fmax=8000, htk=True))
 # print(mel(sr=16000, n_fft=2048))
