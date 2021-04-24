@@ -3,71 +3,73 @@ const DCT = require('dct');
 
 const SAMPLE_RATE = 16000;
 const N_FFT = 2048;
-const MEL_COUNT = 26;
-const MFCC_COUNT = 40;
+const N_MEL_FILTERS = 26;
+const N_MFCC = 40;
 
+// Checking that DCT works
 console.log(DCT([1, 2, 3, 4, 5]));
 
 let samples = new Array(SAMPLE_RATE);
 let context = null; // ?
 
-// Generate a random audio buffer with values from -1 to 1
-for (let i = 0; i < SAMPLE_RATE; i++) {
-    samples[i] = Math.random() * 2 - 1;
+// Generate a random 1 second audio buffer with values from -1 to 1
+function genRandomAudioBuffer(sampleRate) {
+    let arr = new Float32Array(sampleRate);
+
+    for (let i = 0; i < sampleRate; i++) {
+        arr[i] = Math.random() * 2 - 1;
+    }
+
+    return arr;
 }
 
-// const hzs = melFrequencies(5, 0, 11025);
-// console.log(hzs);
-
+// Create filterbank before everything else
 let t0 = performance.now();
-melFilterBank = createMelFilterbank(SAMPLE_RATE, N_FFT, MEL_COUNT);
+melFilterBank = createMelFilterBank(SAMPLE_RATE, N_FFT, N_MEL_FILTERS);
 console.log(`filterbank took: ${performance.now() - t0} ms`);
 console.log(melFilterBank);
 
-function fft(y) {
+function rfft(y) {
     const fftr = new KissFFT.FFTR(y.length);
     const transform = fftr.forward(y);
     fftr.dispose();
     return transform;
 }
 
-function mfcc(s) {
-    let res = magSpectrogram(s, 2048, 512);
+// Computes Mel-Frequency Cepstral Coefficients for y
+function mfcc(y, nMfcc) {
+    const S = powerSpectrum(y, 2048, 512);
 
-    out = [];
+    let mfccs = [];
 
-    for (let i = 0; i < res.length; i++) {
-        let filtered = applyFilterbank(res[i], melFilterBank)
-        out[i] = DCT(filtered);
+    for (let i = 0; i < S.length; i++) {
+        let logFilterBankEnergies = applyFilterbank(S[i], melFilterBank)
+        mfccs[i] = DCT(logFilterBankEnergies);
     }
 
-    return out;
+    return mfccs.slice(0, nMfcc);
 }
 
 // loadBuffer(fileUrl).then(audioBuffer => {
 loadExampleBuffer().then(audioBuffer => {
     let samples = audioBuffer.getChannelData(0);
-    // console.log(samples.slice(0, 10));
-    // let fft_data = fft(samples);
-    // console.log(fft_data);
 
     // match: librosa.stft(s, 2048, 2048//4, 2048, center=True).T
     let t0 = performance.now();
-    // let res = stft(samples, 2048, 512);
-    // let res = magSpectrogram(samples, 2048, 512);
-    let res = mfcc(samples).slice(0, 40);
-
-    console.log(res);
+    let mfccs = mfcc(samples, N_MFCC);
     console.log(`mfcc took: ${performance.now() - t0} ms`);
+
+    console.log(mfccs);
 });
 
 const loadEl = document.querySelector('#load');
 loadEl.addEventListener('change', function (e) {
     const files = this.files;
     const fileUrl = URL.createObjectURL(files[0]);
+
     loadBuffer(fileUrl).then(audioBuffer => {
         let samples = audioBuffer.getChannelData(0);
-        let fft_data = fft(samples);
+        let fft_data = rfft(samples);
         console.log(fft_data);
     });
 });
@@ -143,7 +145,7 @@ function stft(y, fftSize = 2048, hopSize = fftSize / 4) {
 
         const win = hannWindow(buffer.length);
         const winBuffer = applyWindow(buffer, win);
-        const fft_res = fft(winBuffer);
+        const fft_res = rfft(winBuffer);
 
         matrix[i].set(fft_res);
     }
@@ -155,14 +157,15 @@ function square(x) {
     return x * x;
 }
 
-// Computes a magnitude spectrogram of the input.
+// Computes a power spectrum of the input.
 // This is equivalent to 2 ** np.abs(stft()), where np.abs is sqrt(a^2 + b^2)
 // equivalent librosa call: 
-// librosa.core.spectrum._spectrogram(y=y, n_fft=2048, hop_length=512, power=2, center=True)[0].T
-function magSpectrogram(y, fftSize = 2048, hopLength = fftSize / 4) {
-    const freqData = stft(y, fftSize, hopLength);
+// librosa.core.spectrum._spectrogram(
+//      y=y, n_fft=2048, hop_length=512, power=2, center=True)[0].T
+function powerSpectrum(y, fftSize = 2048, hopLength = fftSize / 4) {
+    const complexSpec = stft(y, fftSize, hopLength);
 
-    return freqData.map(fft => {
+    return complexSpec.map(fft => {
         let out = new Float32Array(fft.length / 2);
 
         for (let i = 0; i < fft.length / 2; i++) {
@@ -240,7 +243,7 @@ function melFrequencies(melCount, lowHz, highHz) {
     return melFreqs;
 }
 
-function createMelFilterbank(
+function createMelFilterBank(
     sr,
     fftSize = 2048,
     melCount = 128, // example uses 40 mels
