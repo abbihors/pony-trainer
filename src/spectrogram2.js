@@ -65,7 +65,8 @@ loadExampleBuffer().then(audioBuffer => {
     let mfccs = mfcc(samples, N_MFCC);
     console.log(`mfcc took: ${performance.now() - t0} ms`);
 
-    console.log(mfccs);
+    console.log(mfccs[0]);
+    console.log(mfccs[1]);
 });
 
 const loadEl = document.querySelector('#load');
@@ -165,6 +166,7 @@ function square(x) {
 
 // Computes a power spectrum of the input.
 // This is equivalent to 2 ** np.abs(stft()), where np.abs is sqrt(a^2 + b^2)
+// 2 ** sqrt(a**2 + b**2) == a**2 + b**2
 // equivalent librosa call: 
 // librosa.core.spectrum._spectrogram(
 //      y=y, n_fft=2048, hop_length=512, power=2, center=True)[0].T
@@ -190,8 +192,13 @@ function sum(array) {
 const MIN_VAL = -10;
 function logGtZero(val) {
     // Ensure that the log argument is nonnegative.
-    // const offset = Math.exp(MIN_VAL);
-    return Math.log(val);
+    const offset = Math.exp(MIN_VAL);
+    return Math.log(val + offset);
+}
+
+// S_db ~= 10 * log10(S) - 10 * log10(ref)
+function powerToDb(val, ref = 1.0) {
+    return 10 * Math.log10(val) - 10 * Math.log10(ref);
 }
 
 function range(count) {
@@ -220,7 +227,7 @@ function applyFilterbank(fftEnergies, filterbank) {
         const win = applyWindow(fftEnergies, filterbank[i]);
 
         // Then add up the coefficents, and take the log.
-        out[i] = logGtZero(sum(win));
+        out[i] = powerToDb(sum(win));
     }
 
     return out;
