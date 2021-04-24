@@ -8,20 +8,10 @@ const N_MFCC = 40;
 
 // Checking that DCT works
 console.log(DCT([1, 2, 3, 4, 5]));
+console.log(dct([1, 2, 3, 4, 5]));
 
 let samples = new Array(SAMPLE_RATE);
 let context = null; // ?
-
-// Generate a random 1 second audio buffer with values from -1 to 1
-function genRandomAudioBuffer(sampleRate) {
-    let arr = new Float32Array(sampleRate);
-
-    for (let i = 0; i < sampleRate; i++) {
-        arr[i] = Math.random() * 2 - 1;
-    }
-
-    return arr;
-}
 
 // Create filterbank before everything else
 let t0 = performance.now();
@@ -36,6 +26,22 @@ function rfft(y) {
     return transform;
 }
 
+// Type 2 Discrete Cosine Transform with orthonormalization
+function dct(y) {
+    y = DCT(y);
+
+    // Orthonormalization
+    for (let i = 0; i < y.length; i++) {
+        if (i == 0) {
+            y[i] *= Math.sqrt(1 / (4 * y.length));
+        } else {
+            y[i] *= Math.sqrt(1 / (2 * y.length));
+        }
+    }
+
+    return y;
+}
+
 // Computes Mel-Frequency Cepstral Coefficients for y
 function mfcc(y, nMfcc) {
     const S = powerSpectrum(y, 2048, 512);
@@ -44,7 +50,7 @@ function mfcc(y, nMfcc) {
 
     for (let i = 0; i < S.length; i++) {
         let logFilterBankEnergies = applyFilterbank(S[i], melFilterBank)
-        mfccs[i] = DCT(logFilterBankEnergies);
+        mfccs[i] = dct(logFilterBankEnergies);
     }
 
     return mfccs.slice(0, nMfcc);
@@ -307,4 +313,15 @@ function linearSpace(start, end, amount) {
     out.push(end);
 
     return out;
+}
+
+// Generate a random 1 second audio buffer with values from -1 to 1
+function genRandomAudioBuffer(sampleRate) {
+    let arr = new Float32Array(sampleRate);
+
+    for (let i = 0; i < sampleRate; i++) {
+        arr[i] = Math.random() * 2 - 1;
+    }
+
+    return arr;
 }
