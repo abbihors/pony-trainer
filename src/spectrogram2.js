@@ -1,5 +1,6 @@
 const KissFFT = require('kissfft-js');
 const DCT = require('dct');
+// const TF = require('@tensorflow/tfjs');
 
 const SAMPLE_RATE = 16000;
 const N_FFT = 2048;
@@ -66,10 +67,18 @@ loadExampleBuffer().then(audioBuffer => {
     console.log(`mfcc took: ${performance.now() - t0} ms`);
 
     mfccs = transpose(mfccs);
+    mfccs = flatten(mfccs);
 
-    console.log(mfccs[0]);
-    console.log(mfccs[1]);
-    console.log(mfccs[mfccs.length - 1]);
+    console.log(mfccs.length);
+
+    // const prediction = model.predict(mfccs);
+    // console.log(prediction);
+
+    // console.log(mfccs[0]);
+    // console.log(mfccs[1]);
+    // console.log(mfccs[mfccs.length - 1]);
+
+    // load and use tf to predict
 });
 
 const loadEl = document.querySelector('#load');
@@ -228,6 +237,21 @@ function transpose(matrix) {
     }
 
     return grid;
+}
+
+function flatten(arr2d) {
+    const rows = arr2d.length;
+    const cols = arr2d[0].length;
+
+    let flattened = new Float32Array(rows * cols);
+
+    for (let i = 0; i < rows; i++) {
+        for (let j = 0; j < cols; j++) {
+            flattened[i * cols + j] = arr2d[i][j];
+        }
+    }
+
+    return flattened;
 }
 
 function hannWindow(length) {
