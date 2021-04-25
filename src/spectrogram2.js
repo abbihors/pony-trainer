@@ -1,6 +1,6 @@
 const KissFFT = require('kissfft-js');
 const DCT = require('dct');
-// const TF = require('@tensorflow/tfjs');
+const TF = require('@tensorflow/tfjs');
 
 const SAMPLE_RATE = 16000;
 const N_FFT = 2048;
@@ -59,26 +59,24 @@ function mfcc(y, nMfcc) {
 
 // loadBuffer(fileUrl).then(audioBuffer => {
 loadExampleBuffer().then(audioBuffer => {
-    let samples = audioBuffer.getChannelData(0);
+    TF.loadLayersModel('./model.json').then(model => {
+        let samples = audioBuffer.getChannelData(0);
 
-    // match: librosa.stft(s, 2048, 2048//4, 2048, center=True).T
-    let t0 = performance.now();
-    let mfccs = mfcc(samples, N_MFCC);
-    console.log(`mfcc took: ${performance.now() - t0} ms`);
+        // match: librosa.stft(s, 2048, 2048//4, 2048, center=True).T
+        let t0 = performance.now();
+        let mfccs = mfcc(samples, N_MFCC);
+        console.log(`mfcc took: ${performance.now() - t0} ms`);
 
-    mfccs = transpose(mfccs);
-    mfccs = flatten(mfccs);
+        let tensor = TF.tensor2d(mfccs, [32, 40], "float32");
 
-    console.log(mfccs.length);
+        tensor = tensor.transpose();
+        tensor = tensor.reshape([1, 40, 32, 1]);
 
-    // const prediction = model.predict(mfccs);
-    // console.log(prediction);
+        let prediction = (model.predict(tensor).arraySync() > 0.5) ? 'other' : 'animal';
+        console.log(`prediction: ${prediction}`)
 
-    // console.log(mfccs[0]);
-    // console.log(mfccs[1]);
-    // console.log(mfccs[mfccs.length - 1]);
-
-    // load and use tf to predict
+        console.log(`total time: ${performance.now() - t0} ms`);
+    });
 });
 
 const loadEl = document.querySelector('#load');
