@@ -57,9 +57,29 @@ function mfcc(y, nMfcc) {
     return mfccs.slice(0, nMfcc);
 }
 
+function predict(model, mfccs) {
+    let t0 = performance.now();
+
+    mfccs = transpose(mfccs);
+
+    let tensor = TF.tensor2d(mfccs, [40, 32], "float32");
+    tensor = tensor.reshape([1, 40, 32, 1]);
+
+    console.log(`reshapes: ${performance.now() - t0} ms`);
+
+    if (model.predict(tensor).arraySync() > 0.5) {
+        return 'other';
+    } else {
+        return 'animal';
+    }
+}
+
 // loadBuffer(fileUrl).then(audioBuffer => {
 loadExampleBuffer().then(audioBuffer => {
     TF.loadLayersModel('./model.json').then(model => {
+        // Warm up model, webgl requires shaders to be compiled
+        model.predict(TF.zeros([1, 40, 32, 1]));
+
         let samples = audioBuffer.getChannelData(0);
 
         // match: librosa.stft(s, 2048, 2048//4, 2048, center=True).T
@@ -67,15 +87,10 @@ loadExampleBuffer().then(audioBuffer => {
         let mfccs = mfcc(samples, N_MFCC);
         console.log(`mfcc took: ${performance.now() - t0} ms`);
 
-        let tensor = TF.tensor2d(mfccs, [32, 40], "float32");
-
-        tensor = tensor.transpose();
-        tensor = tensor.reshape([1, 40, 32, 1]);
-
-        let prediction = (model.predict(tensor).arraySync() > 0.5) ? 'other' : 'animal';
-        console.log(`prediction: ${prediction}`)
+        const prediction = predict(model, mfccs);
 
         console.log(`total time: ${performance.now() - t0} ms`);
+        console.log(`prediction: ${prediction}`);
     });
 });
 
