@@ -3,7 +3,7 @@ const DCT = require('dct');
 
 const SAMPLE_RATE = 16000;
 const N_FFT = 2048;
-const N_MEL_FILTERS = 26;
+const N_MEL_FILTERS = 40;
 const N_MFCC = 40;
 
 // Checking that DCT works
@@ -207,6 +207,18 @@ function range(count) {
         out.push(i);
     }
     return out;
+}
+
+function transpose(matrix2d) {
+    for (let i = 0; i < matrix2d.length; i++) {
+        for (let j = 0; j < i; j++) {
+            const tmp = matrix2d[i][j];
+            matrix2d[i][j] = matrix2d[j][i];
+            matrix2d[j][i] = tmp;
+        }
+    }
+
+    return matrix2d;
 }
 
 function hannWindow(length) {
