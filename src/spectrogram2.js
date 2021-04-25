@@ -65,8 +65,11 @@ loadExampleBuffer().then(audioBuffer => {
     let mfccs = mfcc(samples, N_MFCC);
     console.log(`mfcc took: ${performance.now() - t0} ms`);
 
+    mfccs = transpose(mfccs);
+
     console.log(mfccs[0]);
     console.log(mfccs[1]);
+    console.log(mfccs[mfccs.length - 1]);
 });
 
 const loadEl = document.querySelector('#load');
@@ -209,16 +212,22 @@ function range(count) {
     return out;
 }
 
-function transpose(matrix2d) {
-    for (let i = 0; i < matrix2d.length; i++) {
-        for (let j = 0; j < i; j++) {
-            const tmp = matrix2d[i][j];
-            matrix2d[i][j] = matrix2d[j][i];
-            matrix2d[j][i] = tmp;
+function transpose(matrix) {
+    const rows = matrix.length;
+    const cols = matrix[0].length;
+    const grid = [];
+
+    for (let j = 0; j < cols; j++) {
+        grid[j] = new Float32Array(rows);
+    }
+
+    for (let i = 0; i < rows; i++) {
+        for (let j = 0; j < cols; j++) {
+            grid[j][i] = matrix[i][j];
         }
     }
 
-    return matrix2d;
+    return grid;
 }
 
 function hannWindow(length) {
