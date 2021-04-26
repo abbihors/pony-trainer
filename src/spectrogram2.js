@@ -169,8 +169,8 @@ function stft(y, fftSize = 2048, hopSize = fftSize / 4) {
         const ind = i * hopSize;
         const buffer = padded.slice(ind, ind + fftSize);
 
-        // In the end, we will likely have an incomplete buffer, which we should
-        // just ignore.
+        // In the end, we will likely have an incomplete buffer, which
+        // we should just ignore.
         if (buffer.length != fftSize) {
             continue;
         }
@@ -190,7 +190,8 @@ function square(x) {
 }
 
 // Computes a power spectrum of the input.
-// This is equivalent to 2 ** np.abs(stft()), where np.abs is sqrt(a^2 + b^2)
+// This is equivalent to 2 ** np.abs(stft()),
+// where np.abs is sqrt(a^2 + b^2)
 // 2 ** sqrt(a**2 + b**2) == a**2 + b**2
 // equivalent librosa call: 
 // librosa.core.spectrum._spectrogram(
@@ -280,8 +281,8 @@ function applyFilterbank(fftEnergies, filterbank) {
     let out = new Float32Array(filterbank.length);
 
     for (let i = 0; i < filterbank.length; i++) {
-        // To calculate filterbank energies we multiply each filterbank with the
-        // power spectrum.
+        // To calculate filterbank energies we multiply each filterbank
+        // with the power spectrum.
         const win = applyWindow(fftEnergies, filterbank[i]);
 
         // Then add up the coefficents, and take the log.
@@ -328,7 +329,9 @@ function createMelFilterBank(
     const filters = [];
 
     for (let i = 0; i < length; i++) {
-        filters[i] = triangleWindow(fftSize / 2 + 1, bins[i], bins[i + 1], bins[i + 2]);
+        filters[i] = triangleWindow(
+            fftSize / 2 + 1, bins[i], bins[i + 1], bins[i + 2]
+        );
     }
 
     return filters;
@@ -340,12 +343,14 @@ function triangleWindow(length, startIndex, peakIndex, endIndex) {
     const deltaDown = 1.0 / (endIndex - peakIndex);
 
     for (let i = startIndex; i < peakIndex; i++) {
-        // Linear ramp up between start and peak index (values from 0 to 1).
+        // Linear ramp up between start and peak index (values from 0 to
+        // 1).
         win[i] = (i - startIndex) * deltaUp;
     }
 
     for (let i = peakIndex; i < endIndex; i++) {
-        // Linear ramp down between peak and end index (values from 1 to 0).
+        // Linear ramp down between peak and end index (values from 1 to
+        // 0).
         win[i] = 1 - (i - peakIndex) * deltaDown;
     }
 
@@ -365,7 +370,8 @@ function freqToBin(freq, fftSize, sr = SAMPLE_RATE) {
     return Math.floor((fftSize + 1) * freq / sr);
 }
 
-// Returns amount elements evenly spaced between start and end, including end
+// Returns amount elements evenly spaced between start and end,
+// including end
 function linearSpace(start, end, amount) {
     const delta = (end - start) / (amount - 1);
 
