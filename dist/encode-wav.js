@@ -1,5 +1,5 @@
 // See: http://soundfile.sapp.org/doc/WaveFormat/
-export function encodeWav(samples, sampleRate, numChannels) {
+function encodeWavInt16(samples, sampleRate, numChannels) {
     const byteWidth = 2; // Let's just do int16 for now
     const dataSize = samples.length * numChannels * byteWidth;
     
@@ -29,14 +29,12 @@ export function encodeWav(samples, sampleRate, numChannels) {
     let index = 44;
 
     for (let i = 0; i < samples.length; i++) {
-        if (byteWidth === 2) {
-            view.setInt16(index, samples[i] * (0x7FFF * volume), true);
-        } else if (byteWidth === 4) {
-            view.setInt32(index, samples[i] * (0x7FFF * volume), true);
-        }
+        view.setInt16(index, samples[i] * 0x7FFF, true);
 
         index += byteWidth;
     }
+
+    return buffer;
 }
 
 function setString(view, offset, str) {
