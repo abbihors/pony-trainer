@@ -3,7 +3,7 @@ const webpack = require('webpack')
 
 module.exports = {
     mode: 'development',
-    entry: './src/spectrogram2.js',
+    entry: './src/index.js',
     output: {
         filename: 'main.js',
         path: path.resolve(__dirname, 'dist'),

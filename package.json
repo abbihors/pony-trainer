@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "webpack"
   },
   "keywords": [],
   "author": "",
@@ -23,16 +24,7 @@
     "@tensorflow/tfjs": "^3.2.0",
     "buffer": "^6.0.3",
     "dct": "^0.1.0",
-    "fft.js": "^4.0.4",
-    "get-user-media-promise": "^1.1.4",
-    "kissfft-js": "^0.1.8",
-    "mathjs": "^9.2.0",
-    "meyda": "^5.1.0",
-    "microphone-stream": "^5.3.1",
-    "node-wav": "0.0.2",
-    "path-browserify": "^1.0.1",
-    "process": "^0.11.10",
-    "stft": "0.0.0",
-    "util": "^0.12.3"
+    "jszip": "^3.6.0",
+    "kissfft-js": "^0.1.8"
   }
 }

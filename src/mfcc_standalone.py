@@ -79,9 +79,6 @@ def power_to_db(S, ref=1.0, amin=1e-10, top_db=80.0):
     else:
         ref_value = np.abs(ref)
 
-    # print(S)
-    print(S.shape)
-
     log_spec = 10.0 * np.log10(np.maximum(amin, magnitude))
     log_spec -= 10.0 * np.log10(np.maximum(amin, ref_value))
 
@@ -308,12 +305,12 @@ def _spectrogram(
                     pad_mode=pad_mode,
                 )
             )
-            ** power # pow is 2 here!!!
+            ** power
         )
 
     return S, n_fft
 
-def fft_frequencies(sr=16000, n_fft=2048):
+def fft_frequencies(sr=22050, n_fft=2048):
     return np.linspace(0, float(sr) / 2, int(1 + n_fft // 2), endpoint=True)
 
 def mel_frequencies(n_mels=128, fmin=0.0, fmax=11025.0, htk=False):
@@ -431,7 +428,6 @@ def mel(
         # .. then intersect them with each other and zero
         weights[i] = np.maximum(0, np.minimum(lower, upper))
 
-
     if norm == "slaney":
         # Slaney-style mel is scaled to be approx constant energy per channel
         enorm = 2.0 / (mel_f[2 : n_mels + 2] - mel_f[:n_mels])
@@ -466,23 +462,16 @@ def melspectrogram(
         pad_mode=pad_mode,
     )
 
-    print(S.shape)
-
     # Build a Mel filter
     mel_basis = mel(sr, n_fft, **kwargs)
 
     return np.dot(mel_basis, S)
-
-# print(_spectrogram(samples, sr));
 
 def mfcc(
     y=None, sr=22050, S=None, n_mfcc=20, dct_type=2, norm="ortho", lifter=0, **kwargs
 ):
     if S is None:
         S = power_to_db(melspectrogram(y=y, sr=sr, **kwargs))
-
-    # print(S)
-    # print(S.shape)
 
     M = scipy.fftpack.dct(S, axis=0, type=dct_type, norm=norm)[:n_mfcc]
 
@@ -502,17 +491,7 @@ def mfcc(
             "MFCC lifter={} must be a non-negative number".format(lifter)
         )
 
-
-
 np.random.seed(42)
-# random_samples = np.random.uniform(0, 1, 1000)
-import librosa
-s, sr = librosa.load('src/neigh_sample.wav', sr=16000)
-mfccs = mfcc(y=s, sr=16000, n_mfcc=400)
-print(mfccs.shape)
-
-# print(mel_frequencies(40 + 2, fmin=0.0, fmax=8000, htk=True))
-# print(mel(sr=16000, n_fft=2048))
-
-# arr = np.array([0, 1, 2, 3, 4, 5, 6, 7])
-# print(frame(arr, 3, 2, axis=0))
+random_samples = np.random.uniform(0, 1, 1000)
+mfccs = mfcc(y=random_samples, sr=16000, n_mfcc=40)
+print(mfccs)

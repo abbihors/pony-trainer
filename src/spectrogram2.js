@@ -8,8 +8,8 @@ const N_MEL_FILTERS = 40;
 const N_MFCC = 40;
 
 // Checking that DCT works
-console.log(DCT([1, 2, 3, 4, 5]));
-console.log(dct([1, 2, 3, 4, 5]));
+// console.log(DCT([1, 2, 3, 4, 5]));
+// console.log(dct([1, 2, 3, 4, 5]));
 
 let samples = new Array(SAMPLE_RATE);
 let context = null; // ?
@@ -18,7 +18,7 @@ let context = null; // ?
 let t0 = performance.now();
 melFilterBank = createMelFilterBank(SAMPLE_RATE, N_FFT, N_MEL_FILTERS);
 console.log(`filterbank took: ${performance.now() - t0} ms`);
-console.log(melFilterBank);
+// console.log(melFilterBank);
 
 function rfft(y) {
     const fftr = new KissFFT.FFTR(y.length);
