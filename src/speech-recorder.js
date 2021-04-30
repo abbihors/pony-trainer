@@ -2,14 +2,15 @@
 
 import { BoundedQueue } from './bounded-queue';
 
+const BLOCKSIZE = 1024;
+
 export class SpeechRecorder {
-    constructor(sampleRate, channels, recordVol, maxSilenceS, prevAudioS) {
-        this.sampleRate = sampleRate;
-        this.channels = channels;
-        this.recordVol = recordVol;
-        this.blocksize = 1024;
-        this.maxSilenceS = maxSilenceS;
-        this.prevAudioS = prevAudioS;
+    constructor(config) {
+        this.sampleRate = config.sampleRate;
+        this.channels = config.channels;
+        this.recordVol = config.recordVol;
+        this.maxSilenceS = config.maxSilenceS;
+        this.prevAudioS = config.prevAudioS;
 
         this.started = false;
         this.ready = false;
@@ -47,7 +48,7 @@ export class SpeechRecorder {
     }
 
     resetRecorder() {
-        const blocksPerSec = Math.round(this.sampleRate / this.blocksize);
+        const blocksPerSec = Math.round(this.sampleRate / BLOCKSIZE);
 
         this.prevVolumes = new BoundedQueue(
             Math.round(blocksPerSec * this.maxSilenceS)

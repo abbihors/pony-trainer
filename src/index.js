@@ -3,16 +3,16 @@ import { encodeWavInt16 } from './encode-wav';
 
 import { JSZip } from 'jszip';
 
-const SAMPLE_RATE = 16000;
+const SAMPLERATE = 16000;
 const CHANNELS = 1;
 
-const RECORD_THRESHOLD = 0.04;
-const MAX_SILENCE_S = 1.0;
-const PREV_AUDIO_S = 0.2;
-
-let recorder = new SpeechRecorder(
-    SAMPLE_RATE, CHANNELS, RECORD_THRESHOLD, MAX_SILENCE_S, PREV_AUDIO_S
-);
+let recorder = new SpeechRecorder({
+    sampleRate: SAMPLERATE,
+    channels: CHANNELS,
+    recordVol: 0.04,
+    maxSilenceS: 1.0,
+    prevAudioS: 0.2
+});
 
 recorder.onspeech = (recording) => {
     console.log('Got a recording!');
@@ -36,7 +36,7 @@ stopButton.onclick = () => {
 };
 
 function prepareDownload(recording) {
-    const wavData = encodeWavInt16(recording, SAMPLE_RATE, CHANNELS);
+    const wavData = encodeWavInt16(recording, SAMPLERATE, CHANNELS);
     const blob = new Blob([wavData], { type: 'audio/wav' });
     downloadLink.href = URL.createObjectURL(blob);
     downloadLink.download = 'recording.wav';
