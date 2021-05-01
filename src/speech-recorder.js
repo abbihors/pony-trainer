@@ -111,7 +111,7 @@ export class SpeechRecorder {
 }
 
 function flatten(buffers) {
-    const bufSize = buffers[0].length;
+    const bufSize = BLOCKSIZE;
     let out = new Float32Array(bufSize * buffers.length);
 
     for (let i = 0; i < buffers.length; i++) {

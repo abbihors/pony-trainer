@@ -4,11 +4,12 @@
 
 export class BoundedQueue {
     constructor(size) {
-        this._queue = new Array(size);
+        this.size = size;
+        this._queue = new Array();
     }
 
     get queue() {
-        return Object.freeze(this._queue);
+        return this._queue.slice();
     }
 
     get length() {
@@ -16,7 +17,10 @@ export class BoundedQueue {
     }
 
     push(element) {
-        this._queue = this._queue.slice(1);
         this._queue.push(element);
+
+        if (this._queue.length > this.size) {
+            this._queue = this._queue.slice(1, this.size + 1);
+        }
     }
 }
