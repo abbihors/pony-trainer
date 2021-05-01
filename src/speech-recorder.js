@@ -20,11 +20,6 @@ export class SpeechRecorder {
 
     processAudio(block) {
         const rmsVolume = rms(block);
-
-        if (rmsVolume > this.recordVol) {
-            console.log(rmsVolume);
-        }
-
         this.prevVolumes.push(rmsVolume);
 
         if (this.prevVolumes.queue.some(vol => vol > this.recordVol)) {
@@ -96,12 +91,15 @@ export class SpeechRecorder {
             await this.init();
         }
 
-        this._connect();
-        this.started = true;
+        if (!this.started) {
+            this._connect();
+            this.started = true;
+        }
     }
 
     stop() {
         if (!this.ready) return;
+        if (!this.started) return;
 
         this._disconnect();
         this.started = false;

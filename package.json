@@ -17,14 +17,16 @@
     "eslint-plugin-import": "^2.22.1",
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-promise": "^4.3.1",
+    "source-map-loader": "^1.0.0",
     "webpack": "^5.24.1",
     "webpack-cli": "^4.5.0"
   },
   "dependencies": {
-    "@tensorflow/tfjs": "^3.2.0",
+    "@tensorflow/tfjs": "^3.6.0",
     "buffer": "^6.0.3",
     "dct": "^0.1.0",
     "jszip": "^3.6.0",
-    "kissfft-js": "^0.1.8"
+    "kissfft-js": "^0.1.8",
+    "process": "^0.11.10"
   }
 }

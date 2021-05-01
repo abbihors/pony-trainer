@@ -23,5 +23,6 @@ module.exports = {
             "path": false,
             "fs": false,
         }
-    }
+    },
+    devtool: 'source-map',
 };

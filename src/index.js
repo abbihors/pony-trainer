@@ -1,10 +1,16 @@
 import { SpeechRecorder } from './speech-recorder';
 import { encodeWavInt16 } from './encode-wav';
+import { mfcc } from './mfcc';
 
+import * as tf from '@tensorflow/tfjs'
 import { JSZip } from 'jszip';
 
 const SAMPLERATE = 16000;
 const CHANNELS = 1;
+const N_FFT = 2048;
+const N_MFCC = 40;
+
+let model = null;
 
 let recorder = new SpeechRecorder({
     sampleRate: SAMPLERATE,
@@ -14,11 +20,15 @@ let recorder = new SpeechRecorder({
     prevAudioS: 0.2
 });
 
-recorder.onspeech = (recording) => {
-    console.log('Got a recording!');
-    console.log(recording);
+initApp();
 
-    prepareDownload(recording);
+recorder.onspeech = (recording) => {
+    recording = recording.slice(0, SAMPLERATE);
+
+    const mfccs = mfcc(recording, SAMPLERATE, N_FFT, N_MFCC);
+    const prediction = predict(model, mfccs);
+
+    console.log(prediction);
 }
 
 const recordButton = document.querySelector('#btn-record');
@@ -26,9 +36,7 @@ const stopButton = document.querySelector('#btn-stop');
 const downloadLink = document.querySelector('#download');
 
 recordButton.onclick = () => {
-    if (!recorder.started) {
-        recorder.start();
-    }
+    recorder.start();
 };
 
 stopButton.onclick = () => {
@@ -38,6 +46,26 @@ stopButton.onclick = () => {
 function prepareDownload(recording) {
     const wavData = encodeWavInt16(recording, SAMPLERATE, CHANNELS);
     const blob = new Blob([wavData], { type: 'audio/wav' });
-    downloadLink.href = URL.createObjectURL(blob);
-    downloadLink.download = 'recording.wav';
+    return URL.createObjectURL(blob);
+}
+
+function predict(model, mfccs) {
+    let tensor = tf.tensor2d(mfccs, [40, 32], "float32");
+    tensor = tensor.reshape([1, 40, 32, 1]);
+
+    if (model.predict(tensor).arraySync() > 0.5) {
+        return 'other';
+    } else {
+        return 'animal';
+    }
+}
+
+function initApp() {
+    tf.loadLayersModel('./model.json').then((layersModel) => {
+        // Warm up model by giving it an empty input tensor
+        layersModel.predict(tf.zeros([1, 40, 32, 1]));
+        model = layersModel;
+    });
+
+    // TODO: Set up Buttplug
 }
