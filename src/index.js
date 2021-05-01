@@ -23,7 +23,7 @@ let recorder = new SpeechRecorder({
 initApp();
 
 recorder.onspeech = (recording) => {
-    recording = recording.slice(0, SAMPLERATE);
+    recording = trim(recording, SAMPLERATE, true);
 
     const mfccs = mfcc(recording, SAMPLERATE, N_FFT, N_MFCC);
     const prediction = predict(model, mfccs);
@@ -57,6 +57,16 @@ function predict(model, mfccs) {
         return 'other';
     } else {
         return 'animal';
+    }
+}
+
+function trim(arr, length, pad = false) {
+    if (arr.length >= length) {
+        return arr.slice(0, length);
+    } else if (pad) {
+        let newarr = new Float32Array(length);
+        newarr.set(arr, 0);
+        return newarr;
     }
 }
 
