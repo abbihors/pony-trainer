@@ -32,7 +32,9 @@ export class SpeechRecorder {
         } else if (this.recordingStarted) {
             // Recording finished
             if (this.onspeech !== undefined) {
-                const recording = flatten(this.prevBlocks.queue.concat(this.activeRecording));
+                const recording = flatten(
+                    this.prevBlocks.queue.concat(this.activeRecording)
+                );
                 this.onspeech(recording);
             }
             this.resetRecorder();
@@ -60,7 +62,9 @@ export class SpeechRecorder {
     // Has to be run in response to a user gesture
     async init() {
         const audioCtx = new AudioContext({ sampleRate: this.sampleRate });
-        const stream = await navigator.mediaDevices.getUserMedia({ 'audio': true });
+        const stream = await navigator.mediaDevices.getUserMedia({
+            'audio': true 
+        });
 
         const mediaStream = audioCtx.createMediaStreamSource(stream);
 
