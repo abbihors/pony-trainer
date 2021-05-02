@@ -1,5 +1,6 @@
 const path = require('path');
 const webpack = require('webpack')
+const CopyPlugin = require('copy-webpack-plugin');
 
 module.exports = {
     mode: 'development',
@@ -17,12 +18,16 @@ module.exports = {
         new webpack.ProvidePlugin({
             Buffer: ['buffer', 'Buffer'],
         }),
+        new CopyPlugin({
+            patterns: [
+                { from: 'src/assets', to: 'assets' },
+            ],
+        }),
     ],
     resolve: {
         fallback: {
-            "path": false,
-            "fs": false,
+            'path': false,
+            'fs': false,
         }
-    },
-    devtool: 'source-map',
+    }
 };

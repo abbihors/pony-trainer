@@ -71,7 +71,7 @@ function trim(arr, length, pad = false) {
 }
 
 function initApp() {
-    tf.loadLayersModel('./model.json').then((layersModel) => {
+    tf.loadLayersModel('./assets/model.json').then((layersModel) => {
         // Warm up model by giving it an empty input tensor
         layersModel.predict(tf.zeros([1, 40, 32, 1]));
         model = layersModel;
