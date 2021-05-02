@@ -16,6 +16,8 @@ let recorder;
 let vibrator;
 let zip;
 
+let recordVolume = 0.04;
+
 initApp();
 
 const recordButton = document.querySelector('#btn-record');
@@ -23,6 +25,12 @@ const stopButton = document.querySelector('#btn-stop');
 const downloadButton = document.querySelector('#btn-dl');
 const scanButton = document.querySelector('#btn-scan');
 const recordCheckbox = document.querySelector('#save-samples');
+const recordVolSlider = document.querySelector('#record-vol-slider');
+const recordVolBox = document.querySelector('#record-vol-box');
+const indicatorCanvas = document.querySelector('#record-indicator');
+
+recordVolSlider.value = recordVolume;
+recordVolBox.value = recordVolume;
 
 recorder.onspeech = (recording) => {
     recording = trim(recording, SAMPLERATE, true);
@@ -36,6 +44,7 @@ recorder.onspeech = (recording) => {
         vibrator.vibrateFor(0.3, 200);
     }
 
+    // TODO: move to sample recorder or something
     if (recordCheckbox.checked) {
         zip.file(
             `recorded_samples/${prediction}/web_${Date.now()}.wav`,
@@ -44,26 +53,54 @@ recorder.onspeech = (recording) => {
     }
 }
 
-recordButton.onclick = () => {
+recordButton.addEventListener('click', () => {
     recorder.start();
     zip = new JSZip();
-};
+});
 
-stopButton.onclick = () => {
+stopButton.addEventListener('click', () => {
     recorder.stop();
-};
+});
 
-scanButton.onclick = () => {
+scanButton.addEventListener('click', () => {
     vibrator.scanForToys();
-}
+});
 
-downloadButton.onclick = () => {
+downloadButton.addEventListener('click', () => {
     zip.generateAsync({ type: 'blob' }).then(saveBlob);
-}
+});
 
-recordCheckbox.onclick = (e) => {
+recordCheckbox.addEventListener('click', () => {
     downloadButton.disabled = !recordCheckbox.checked;
-}
+});
+
+recordVolSlider.addEventListener('input', (e) => {
+    const vol = e.target.value;
+    recorder.recordVol = vol;
+    recordVolBox.value = vol;
+});
+
+recordVolBox.addEventListener('change', (e) => {
+    const vol = e.target.value;
+    recorder.recordVol = vol;
+    recordVolSlider.value = vol;
+});
+
+const ctx = indicatorCanvas.getContext('2d');
+ctx.fillStyle = 'grey';
+ctx.fillRect(5, 5, 20, 20);
+
+stopButton.addEventListener('click', () => {
+    const ctx = indicatorCanvas.getContext('2d');
+    ctx.fillStyle = 'grey';
+    ctx.fillRect(5, 5, 20, 20);
+});
+
+recordButton.addEventListener('click', () => {
+    const ctx = indicatorCanvas.getContext('2d');
+    ctx.fillStyle = 'red';
+    ctx.fillRect(5, 5, 20, 20);
+});
 
 function prepareDownload(recording) {
     const wavData = encodeWavInt16(recording, SAMPLERATE, CHANNELS);
@@ -111,7 +148,7 @@ function initApp() {
     recorder = new SpeechRecorder({
         sampleRate: SAMPLERATE,
         channels: CHANNELS,
-        recordVol: 0.04,
+        recordVol: recordVolume,
         maxSilenceS: 0.8, // This + prevAudioS define min recording length
         prevAudioS: 0.2
     });
