@@ -3,7 +3,7 @@ import { encodeWavInt16 } from './encode-wav';
 import { mfcc } from './mfcc';
 
 import * as tf from '@tensorflow/tfjs'
-import { JSZip } from 'jszip';
+import * as JSZip from 'jszip';
 
 const SAMPLERATE = 16000;
 const CHANNELS = 1;
@@ -16,7 +16,7 @@ let recorder = new SpeechRecorder({
     sampleRate: SAMPLERATE,
     channels: CHANNELS,
     recordVol: 0.04,
-    maxSilenceS: 1.0,
+    maxSilenceS: 0.8, // This + prevAudioS define min recording length
     prevAudioS: 0.2
 });
 
