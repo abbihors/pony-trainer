@@ -1,4 +1,5 @@
 import { SpeechRecorder } from './speech-recorder';
+import { Vibrator } from './vibrator';
 import { encodeWavInt16 } from './encode-wav';
 import { mfcc } from './mfcc';
 
@@ -10,15 +11,9 @@ const CHANNELS = 1;
 const N_FFT = 2048;
 const N_MFCC = 40;
 
-let model = null;
-
-let recorder = new SpeechRecorder({
-    sampleRate: SAMPLERATE,
-    channels: CHANNELS,
-    recordVol: 0.04,
-    maxSilenceS: 0.8, // This + prevAudioS define min recording length
-    prevAudioS: 0.2
-});
+let model;
+let recorder;
+let vibrator;
 
 initApp();
 
@@ -29,11 +24,16 @@ recorder.onspeech = (recording) => {
     const prediction = predict(model, mfccs);
 
     console.log(prediction);
+
+    if (prediction === "animal") {
+        vibrator.vibrateFor(0.3, 200);
+    }
 }
 
 const recordButton = document.querySelector('#btn-record');
 const stopButton = document.querySelector('#btn-stop');
 const downloadLink = document.querySelector('#download');
+const scanButton = document.querySelector('#btn-scan');
 
 recordButton.onclick = () => {
     recorder.start();
@@ -42,6 +42,10 @@ recordButton.onclick = () => {
 stopButton.onclick = () => {
     recorder.stop();
 };
+
+scanButton.onclick = () => {
+    vibrator.scanForToys();
+}
 
 function prepareDownload(recording) {
     const wavData = encodeWavInt16(recording, SAMPLERATE, CHANNELS);
@@ -72,10 +76,18 @@ function trim(arr, length, pad = false) {
 
 function initApp() {
     tf.loadLayersModel('./assets/model.json').then((layersModel) => {
-        // Warm up model by giving it an empty input tensor
-        layersModel.predict(tf.zeros([1, 40, 32, 1]));
         model = layersModel;
+        // Warm up model by giving it an empty input tensor
+        model.predict(tf.zeros([1, 40, 32, 1]));
     });
 
-    // TODO: Set up Buttplug
+    recorder = new SpeechRecorder({
+        sampleRate: SAMPLERATE,
+        channels: CHANNELS,
+        recordVol: 0.04,
+        maxSilenceS: 0.8, // This + prevAudioS define min recording length
+        prevAudioS: 0.2
+    });
+    
+    vibrator = new Vibrator("Pony Trainer");
 }
