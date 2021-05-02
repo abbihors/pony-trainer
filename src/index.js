@@ -14,8 +14,15 @@ const N_MFCC = 40;
 let model;
 let recorder;
 let vibrator;
+let zip;
 
 initApp();
+
+const recordButton = document.querySelector('#btn-record');
+const stopButton = document.querySelector('#btn-stop');
+const downloadButton = document.querySelector('#btn-dl');
+const scanButton = document.querySelector('#btn-scan');
+const recordCheckbox = document.querySelector('#save-samples');
 
 recorder.onspeech = (recording) => {
     recording = trim(recording, SAMPLERATE, true);
@@ -28,15 +35,18 @@ recorder.onspeech = (recording) => {
     if (prediction === "animal") {
         vibrator.vibrateFor(0.3, 200);
     }
-}
 
-const recordButton = document.querySelector('#btn-record');
-const stopButton = document.querySelector('#btn-stop');
-const downloadLink = document.querySelector('#download');
-const scanButton = document.querySelector('#btn-scan');
+    if (recordCheckbox.checked) {
+        zip.file(
+            `recorded_samples/${prediction}/web_${Date.now()}.wav`,
+            encodeWavInt16(recording, SAMPLERATE, CHANNELS)
+        );
+    }
+}
 
 recordButton.onclick = () => {
     recorder.start();
+    zip = new JSZip();
 };
 
 stopButton.onclick = () => {
@@ -47,10 +57,27 @@ scanButton.onclick = () => {
     vibrator.scanForToys();
 }
 
+downloadButton.onclick = () => {
+    zip.generateAsync({ type: 'blob' }).then(saveBlob);
+}
+
+recordCheckbox.onclick = (e) => {
+    downloadButton.disabled = !recordCheckbox.checked;
+}
+
 function prepareDownload(recording) {
     const wavData = encodeWavInt16(recording, SAMPLERATE, CHANNELS);
     const blob = new Blob([wavData], { type: 'audio/wav' });
     return URL.createObjectURL(blob);
+}
+
+// Hacky way to download a blob
+function saveBlob(blob) {
+    let a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'recorded_samples.zip';
+    a.click();
+    a.remove();
 }
 
 function predict(model, mfccs) {
@@ -88,6 +115,6 @@ function initApp() {
         maxSilenceS: 0.8, // This + prevAudioS define min recording length
         prevAudioS: 0.2
     });
-    
+
     vibrator = new Vibrator("Pony Trainer");
 }

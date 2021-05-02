@@ -1,7 +1,6 @@
 export class Vibrator {
     constructor(appName) {
         this.appName = appName;
-        this.ready = false;
     }
 
     async connect() {
@@ -11,7 +10,14 @@ export class Vibrator {
         this.connector = new Buttplug.ButtplugEmbeddedConnectorOptions();
 
         await this.client.connect(this.connector);
-        this.ready = true;
+    }
+
+    get ready() {
+        if (this.client === undefined) {
+            return false;
+        } else {
+            return true;
+        }
     }
 
     async scanForToys() {
@@ -22,6 +28,9 @@ export class Vibrator {
     }
 
     async vibrateFor(strength, ms) {
+        console.log(this.client);
+        if (!this.ready) return;
+        
         for (let device of this.client.Devices) {
             await device.vibrate(strength);
 
