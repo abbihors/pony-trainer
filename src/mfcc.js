@@ -2,7 +2,7 @@ import KissFFT from 'kissfft-js';
 import DCT from 'dct';
 
 // Computes Mel-Frequency Cepstral Coefficients for y
-export function mfcc(y, sampleRate, fftSize, nMfcc) {
+export default function mfcc(y, sampleRate, fftSize, nMfcc) {
     const S = powerSpectrum(y, 2048, 512);
 
     let mfccs = [];

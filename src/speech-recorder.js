@@ -1,50 +1,24 @@
 // Voice activated speech recorder
 
-import { BoundedQueue } from './bounded-queue';
+import { BoundedQueue } from './queue';
 
 const BLOCKSIZE = 1024;
 
-export class SpeechRecorder {
-    constructor(config) {
+export default class SpeechRecorder {
+    constructor(config, callback) {
         this.sampleRate = config.sampleRate;
         this.channels = config.channels;
         this.recordVol = config.recordVol;
         this.maxSilenceS = config.maxSilenceS;
         this.prevAudioS = config.prevAudioS;
 
-        this.started = false;
-        this.ready = false;
+        this.onspeech = callback;
+        this.volume = 0;
 
-        this.resetRecorder();
+        this._resetRecorder();
     }
 
-    processAudio(block) {
-        const rmsVolume = rms(block);
-        this.prevVolumes.push(rmsVolume);
-
-        if (this.prevVolumes.queue.some(vol => vol > this.recordVol)) {
-            // Still have recent volume above recordVol, add buffer and
-            // keep recording
-            if (!this.recordingStarted) {
-                this.recordingStarted = true;
-            }
-            this.activeRecording.push(new Float32Array(block));
-        } else if (this.recordingStarted) {
-            // Recording finished
-            if (this.onspeech !== undefined) {
-                const recording = flatten(
-                    this.prevBlocks.queue.concat(this.activeRecording)
-                );
-                this.onspeech(recording);
-            }
-            this.resetRecorder();
-        } else {
-            // No audio above recordVol, add previous audio
-            this.prevBlocks.push(new Float32Array(block));
-        }
-    }
-
-    resetRecorder() {
+    _resetRecorder() {
         const blocksPerSec = Math.round(this.sampleRate / BLOCKSIZE);
 
         this.prevVolumes = new BoundedQueue(
@@ -56,14 +30,13 @@ export class SpeechRecorder {
         );
 
         this.activeRecording = [];
-        this.recordingStarted = false;
     }
 
     // Has to be run in response to a user gesture
     async init() {
         const audioCtx = new AudioContext({ sampleRate: this.sampleRate });
         const stream = await navigator.mediaDevices.getUserMedia({
-            'audio': true 
+            'audio': true
         });
 
         const mediaStream = audioCtx.createMediaStreamSource(stream);
@@ -73,7 +46,7 @@ export class SpeechRecorder {
         );
 
         recorder.onaudioprocess = (event) => {
-            this.processAudio(event.inputBuffer.getChannelData(0));
+            this._processAudio(event.inputBuffer.getChannelData(0));
         };
 
         // Using closures here to capture context variables
@@ -86,27 +59,46 @@ export class SpeechRecorder {
             mediaStream.disconnect(recorder);
             recorder.disconnect();
         }
-
-        this.ready = true;
     }
 
-    async start() {
-        if (!this.ready) {
-            await this.init();
-        }
+    _recordingStarted() {
+        return this.activeRecording.length > 0;
+    }
 
-        if (!this.started) {
-            this._connect();
-            this.started = true;
+    _processAudio(block) {
+        const rmsVolume = rms(block);
+
+        this.volume = rmsVolume;
+        this.prevVolumes.enqueue(rmsVolume);
+
+        // TODO: Could probably be refactored
+        if (this.prevVolumes.queue.some(vol => vol > this.recordVol)) {
+            this.activeRecording.push(new Float32Array(block));
+        } else if (this._recordingStarted()) {
+            // Recording finished
+            const recording = flatten(
+                this.prevBlocks.queue.concat(this.activeRecording)
+            );
+            this.onspeech(recording);
+            this._resetRecorder();
+        } else {
+            // No audio above recordVol, add previous audio
+            this.prevBlocks.enqueue(new Float32Array(block));
         }
+    }
+
+    start() {
+        this.init().then(() => {
+            this.resume();
+        });
     }
 
     stop() {
-        if (!this.ready) return;
-        if (!this.started) return;
-
         this._disconnect();
-        this.started = false;
+    }
+
+    resume() {
+        this._connect();
     }
 }
 
