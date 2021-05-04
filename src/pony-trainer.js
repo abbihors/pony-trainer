@@ -2,6 +2,7 @@ import SpeechRecorder from './speech-recorder';
 import Vibrator from './vibrator';
 import mfcc from './mfcc';
 import { patterns } from './patterns';
+import { getRandomInt, getRandomChoice } from './utils/random';
 
 import * as tf from '@tensorflow/tfjs'
 
@@ -177,19 +178,4 @@ function trim(arr, length, pad = false) {
         newarr.set(arr, 0);
         return newarr;
     }
-}
-
-function getRandom(min, max) {
-    return Math.random() * (max - min) + min;
-}
-
-// Excludes max
-function getRandomInt(min, max) {
-    min = Math.ceil(min);
-    max = Math.floor(max);
-    return Math.floor(Math.random() * (max - min) + min);
-}
-
-function getRandomChoice(arr) {
-    return arr[getRandomInt(0, arr.length)];
 }

@@ -1,5 +1,6 @@
-// Patterns are in the form: [strength, onMs, offMs]
+import { getRandom } from './utils/random';
 
+// Patterns are in the form: [strength, onMs, offMs]
 export const patterns = {
     "Basic": {
         weight: 9,
@@ -56,8 +57,4 @@ function repeat(pattern, times) {
     }
 
     return arr;
-}
-
-function getRandom(min, max) {
-    return Math.random() * (max - min) + min;
 }

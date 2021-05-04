@@ -1,6 +1,6 @@
 // Voice activated speech recorder
 
-import { BoundedQueue } from './queue';
+import { BoundedQueue } from './utils/queue';
 
 const BLOCKSIZE = 1024;
 

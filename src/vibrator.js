@@ -1,4 +1,4 @@
-import { Queue } from './queue';
+import { Queue } from './utils/queue';
 
 export default class Vibrator {
     constructor(appName, maxStrength = 1.0) {
