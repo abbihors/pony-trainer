@@ -57,24 +57,34 @@ export default class Vibrator {
     }
 
     async _runNextInQueue() {
-        if (!this.queue.empty()) {
-            const cmd = this.queue.front();
-            await this._vibrateFor(cmd[0], cmd[1], cmd[2]);
-        }
+        const cmd = this.queue.front();
+        await this._vibrateFor(cmd[0], cmd[1], cmd[2]);
     }
 
     // Vibrates for onTime, advances queue in onTime + offTime
     async _vibrateFor(strength, onMs, offMs = 0) {
         await this._safeVibrate(strength);
 
-        setTimeout(async () => {
-            await this._safeVibrate(this.vibrationLevel);
-        }, onMs);
+        if (offMs > 0) {
+            setTimeout(async () => {
+                await this._safeVibrate(this.vibrationLevel);
+            }, onMs);
 
-        setTimeout(async () => {
-            this.queue.dequeue();
-            await this._runNextInQueue();
-        }, onMs + offMs);
+            setTimeout(async () => {
+                this.queue.dequeue();
+                if (!this.queue.empty()) {
+                    await this._runNextInQueue();
+                }
+            }, onMs + offMs);
+        } else {
+            setTimeout(async () => {
+                this.queue.dequeue();
+                if (!this.queue.empty()) {
+                    await this._runNextInQueue();
+                } else {
+                    await this._safeVibrate(this.vibrationLevel);
+                }
+            }, onMs);
+        }
     }
 }
-

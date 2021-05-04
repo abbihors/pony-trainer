@@ -10,6 +10,9 @@ const DENIAL_LOWER_MS = 20_000;
 const DENIAL_UPPER_MS = 60_000;
 const FULL_DECAY_MS = 200_000; // Time to decay from 1 to 0
 
+const MIN_DENIAL_NEIGHS = 2;
+const MAX_DENIAL_NEIGHS = 5;
+
 const MAX_BACKGROUND_STRENGTH = 0.3;
 const REWARD_STRENGTH = 0.05;
 
@@ -74,7 +77,10 @@ export default class PonyTrainer {
 
         if (!this.vibrator.busy() && this.ticksToDenial === 0) {
             await this.vibrator.stop();
-            this.neighsToResume = getRandomInt(1, 5);
+            this.neighsToResume = getRandomInt(
+                MIN_DENIAL_NEIGHS,
+                MAX_DENIAL_NEIGHS
+            );
             console.log(`Denied! neighs to resume: ${this.neighsToResume}`); // DEBUG
         }
     }
@@ -103,7 +109,6 @@ export default class PonyTrainer {
         console.log(prediction); // DEBUG
 
         if (prediction === "animal") {
-            console.log(`busy: ${this.vibrator.busy()}`);
             if (!this.vibrator.busy()) {
                 await this._rewardPony();
             }
