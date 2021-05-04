@@ -17,6 +17,10 @@ const MAX_DENIAL_NEIGHS = 5;
 const MAX_BACKGROUND_STRENGTH = 0.3;
 const REWARD_STRENGTH = 0.05;
 
+const RECORD_VOL = 0.04;
+const MAX_SILENCE_S = 0.8; // This + prevAudioS define min recording length
+const PREV_AUDIO_S = 0.2;
+
 const SAMPLERATE = 16000;
 const CHANNELS = 1;
 const N_FFT = 2048;
@@ -27,9 +31,9 @@ export default class PonyTrainer {
         this.recorder = new SpeechRecorder({
             sampleRate: SAMPLERATE,
             channels: CHANNELS,
-            recordVol: 0.04,
-            maxSilenceS: 0.8, // This + prevAudioS define min recording length
-            prevAudioS: 0.2
+            recordVol: RECORD_VOL,
+            maxSilenceS: MAX_SILENCE_S,
+            prevAudioS: PREV_AUDIO_S
         }, this._processSpeech.bind(this));
 
         this.vibrator = new Vibrator('Pony Trainer');
