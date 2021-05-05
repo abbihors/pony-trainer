@@ -54,13 +54,23 @@
                 <button id='btn-connect'>Connect vibrator</button>
             </div>
 
-            <!-- <canvas id='progressbar'></canvas> -->
+            <div class='pill progressbar-wrapper'>
+                <div class='pill progressbar'></div>
+            </div>
         </div>
 
         <div class='footer'>
             <p>Copyright © 2021 — Source Code on <a>GitHub</a></p>
         </div>
     </div>
+
+    <script>
+        let bar = document.querySelector('.progressbar');
+
+        setInterval(() => {
+            bar.style.width = (Math.random() * (100 - 0) + 0) + '%';
+        }, 500);
+    </script>
 
     <script lang="javascript" src="https://cdn.jsdelivr.net/npm/buttplug@1.0.14/dist/web/buttplug.min.js"></script>
     <script src='main.js'></script>

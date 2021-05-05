@@ -69,7 +69,7 @@ button {
     border-style: none;
     border-radius: 5px;
     margin: 5px;
-    transition: 0.2s;
+    transition: 200ms;
 }
 
 button:hover {
@@ -77,15 +77,26 @@ button:hover {
     background-color: #00a367;
 }
 
-.wrapper-button {
-    /* margin-top: 10px;
-    margin-bottom: 10px;
-    padding: 5px; */
+.progressbar-wrapper {
+    margin: 5px;
+    margin-top: 25px;
+
+    width: 250px;
+    height: 50px;
+
+    border-color: #98c78c;
+    border-style: solid;
+    border-radius: 30px;
+
+    transform-origin: top left;
+    transform: rotate(270deg) translateX(-100%);
+
+    overflow: hidden;
 }
 
-#progressbar {
-    width: 40px;
-    height: 250px;
-    margin-top: 20px;
-    background-color: darkslateblue;
+.progressbar {
+    width: 5%;
+    height: 100%;
+    background: #00c27b;
+    transition: width 500ms;
 }
