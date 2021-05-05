@@ -1,0 +1,87 @@
+html, body {
+    margin: 0;
+}
+
+body {
+    font-family: 'Open Sans', sans-serif;
+    background-color: #e1f1dd;
+}
+
+h1 {
+    font-weight: bold;
+}
+
+a {
+    color: #00dc8c;
+    text-decoration: none;
+}
+
+a:visited {
+    color: #00dc8c;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+.footer {
+    font-size: 13px;
+    padding-left: 10px;
+    padding-bottom: 10px;
+}
+
+.footer p {
+    margin-top: 7px;
+    margin-bottom: 0px;
+}
+
+.wrapper {
+    height: 95vh;
+    display: grid;
+    gap: 15px;
+    grid-template-columns: 1fr 380px;
+}
+
+.readme {
+    background-color: #ffffff;
+    padding-top: 10px;
+    padding-left: 35px;
+    padding-right: 50px;
+}
+
+.app {
+    padding: 20px;
+    background-color: rgb(255, 255, 255);
+    display: block;
+}
+
+button {
+    font-size: 15px;
+    font-family: 'Open Sans', sans-serif;
+    color: #ffffff;
+    background-color: #00dc8c;
+    padding-top: 6px;
+    padding-bottom: 6px;
+    padding-right: 13px;
+    padding-left: 13px;
+    border-style: none;
+    border-radius: 5px;
+    margin: 5px;
+}
+
+button:hover {
+    box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19);
+}
+
+.wrapper-button {
+    /* margin-top: 10px;
+    margin-bottom: 10px;
+    padding: 5px; */
+}
+
+#progressbar {
+    width: 40px;
+    height: 250px;
+    margin-top: 20px;
+    background-color: darkslateblue;
+}

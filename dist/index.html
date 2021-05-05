@@ -6,61 +6,61 @@
     <meta http-equiv='X-UA-Compatible' content='IE=edge'>
     <title>Pony Trainer</title>
     <meta name='viewport' content='width=device-width, initial-scale=1'>
-</head>
+    <link rel='stylesheet' type='text/css' media='screen' href='main.css'>
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;700&display=swap" rel="stylesheet">
 
 <body>
-    <h1>Pony Trainer</h1>
-    <button id='btn-scan'>Find devices</button>
-    <button id='btn-start'>Start</button>
-    <button id='btn-pause'>Pause</button>
+    <div class='wrapper'>
+        <div class='readme'>
+            <h1>Pony Trainer</h1>
 
-    <div>
-        <input type="range" id="record-vol-slider" name="record-vol-slider" min="0.01" max="0.15" , step="0.01">
-        <label for="record-vol-slider">Mic sensitivity:</label>
+            <h2>What is this?</h2>
+            <p>This is a web app designed to train ponies using classical conditioning. It does this by allowing you
+                to control your Bluetooth vibrator using your voice. If you make the correct noises (e.g. a neigh or
+                snort), you will be rewarded!</p>
 
-        <input type="number" id="record-vol-box" name="record-vol-box" min="0.01" max="0.15">
+            <h2>Will this app record me?</h2>
+            <p>
+                No. The app only keeps the last second of audio at any
+                given time, and it is never uploaded anywhere. If you'd
+                like, you could can open this page in private mode and
+                turn off your internet after loading this page, and the
+                app will continue to work.
+            </p>
+
+            <h2>Toy compatibility</h2>
+            <p>This app will work with any of the (roughly) 150 toys
+                that are supported by the <a href='https://buttplug.io/'>Buttplug</a> library. If you'd
+                like to see if your app is supported, you can check <a
+                    href='https://iostindex.com/?filtersChanged=1&filter0ButtplugSupport=4'>here</a>.</p>
+
+            <h2>Browser compatibility</h2>
+            <p>
+                Currently only Chrome and Chromium-based browsers like
+                Edge are supported, however Firefox and Safari support
+                will be added later but you will have to run <a href=https://intiface.com/desktop/">Intiface
+                    Desktop</a>
+                on your desktop, as neither of these browsers can
+                interact with Bluetooth devices directly.
+            </p>
+        </div>
+
+        <div class='app'>
+            <div class='wrapper-button'>
+                <button id='btn-listen'>Start listening</button>
+            </div>
+            <div class='wrapper-button'>
+                <button id='btn-connect'>Connect vibrator</button>
+            </div>
+
+            <!-- <canvas id='progressbar'></canvas> -->
+        </div>
     </div>
 
-    <div>
-        <canvas id='record-indicator' width="25", height="25"></canvas>
+    <div class='footer'>
+        <p>Copyright (c) 2021 — Source Code on <a>GitHub</a></p>
     </div>
-
-    <div>
-        <input type="checkbox" id="save-samples" name="save-samples" checked>
-        <label for="save-samples">Save recordings</label>
-    </div>
-
-    <h2>Instructions</h2>
-    <ol>
-        <li>Click "Find devices" to scan for nearby toys</li>
-        <li>Click "Start" to begin listening, the app is now ready to use</li>
-        <li>Click "Pause" if you want to pause the app</li>
-    </ol>
-    <p>
-        If you check "Save recordings", the browser will save all speech
-        it detects and you can click "Download Recordings" to save your
-        recordings to a Zip file.
-    </p>
-
-    <h2>Will this spy on my microphone?</h2>
-    <p>
-        No. This app only saves the last 1 second of audio, and it is
-        never uploaded to a server. You have the choice of saving your
-        recordings to your computer assist with development.
-
-        If you are still unconvinced, you can turn off your internet
-        after loading this page, and the app will continue to work.
-    </p>
-
-    <h2>Browser compatibility</h2>
-    <p>
-        Currently only Chrome and Chromium-based browsers like Edge are
-        supported,
-        <strong>HOWEVER</strong> Firefox and Safari support will be
-        added later but you will have to run <a href=https://intiface.com/desktop/">Intiface Desktop</a> on your
-        desktop, as neither of these browsers can interact with
-        Bluetooth devices directly.
-    </p>
 
     <script lang="javascript" src="https://cdn.jsdelivr.net/npm/buttplug@1.0.14/dist/web/buttplug.min.js"></script>
     <script src='main.js'></script>

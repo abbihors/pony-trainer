@@ -2,4 +2,6 @@ node_modules
 .vscode
 .DS_Store
 *.wav
-dist/*
+dist/*.js
+dist/*.txt
+dist/assets
