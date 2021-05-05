@@ -12,12 +12,12 @@ h1 {
 }
 
 a {
-    color: #00dc8c;
+    color: #00c27b;
     text-decoration: none;
 }
 
 a:visited {
-    color: #00dc8c;
+    color: #00c27b;
 }
 
 a:hover {
@@ -61,7 +61,7 @@ button {
     font-size: 15px;
     font-family: 'Open Sans', sans-serif;
     color: #ffffff;
-    background-color: #00dc8c;
+    background-color: #00c27b;
     padding-top: 6px;
     padding-bottom: 6px;
     padding-right: 13px;
