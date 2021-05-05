@@ -79,8 +79,9 @@ button:hover {
 }
 
 .bars {
+    width: 280px;
     transform-origin: top left;
-    transform: rotate(270deg) translateX(-80%);
+    transform: rotate(270deg) translateX(-100%);
 }
 
 .progressbar-wrapper {
@@ -90,10 +91,11 @@ button:hover {
     border-style: solid;
     border-radius: 30px;
     overflow: hidden;
+    margin: 0px;
 }
 
 .progressbar {
-    width: 0%; /* control progress here */
+    width: 0%;
     height: 100%;
     background: #00c27b;
     transition: width 500ms;
@@ -148,4 +150,8 @@ button:hover {
     padding-top: 3px;
     padding-bottom: 3px;
     margin-left: 8px;
+}
+
+.wrapper-listen h3 {
+    margin-top: 8px;
 }
