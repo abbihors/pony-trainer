@@ -25,27 +25,29 @@ a:hover {
 }
 
 .footer {
-    font-size: 13px;
-    padding-left: 10px;
+    padding-left: 30px;
     padding-bottom: 10px;
 }
 
 .footer p {
+    font-size: 13px;
     margin-top: 7px;
     margin-bottom: 0px;
 }
 
 .wrapper {
-    height: 95vh;
     display: grid;
-    gap: 15px;
+    margin: 0 auto;
+    column-gap: 15px;
     grid-template-columns: 1fr 380px;
+    grid-template-rows: 95vh 20px;
+    max-width: 1600px;
 }
 
 .readme {
     background-color: #ffffff;
     padding-top: 10px;
-    padding-left: 35px;
+    padding-left: 30px;
     padding-right: 50px;
 }
 
