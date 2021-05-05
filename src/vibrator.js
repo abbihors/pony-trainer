@@ -44,6 +44,10 @@ export default class Vibrator {
         await this._safeVibrate(newLevel);
     }
 
+    async _restoreBackgroundLevel() {
+        await this._safeVibrate(this.vibrationLevel);
+    }
+
     async stop() {
         await this.device.stop();
     }
@@ -67,7 +71,7 @@ export default class Vibrator {
 
         if (offMs > 0) {
             setTimeout(async () => {
-                await this._safeVibrate(this.vibrationLevel);
+                await this._restoreBackgroundLevel();
             }, onMs);
 
             setTimeout(async () => {
@@ -82,7 +86,7 @@ export default class Vibrator {
                 if (!this.queue.empty()) {
                     await this._runNextInQueue();
                 } else {
-                    await this._safeVibrate(this.vibrationLevel);
+                    await this._restoreBackgroundLevel();
                 }
             }, onMs);
         }
