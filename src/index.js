@@ -2,63 +2,39 @@ import PonyTrainer from './pony-trainer';
 
 let ponyTrainer = new PonyTrainer();
 
-const scanButton = document.querySelector('#btn-scan');
-const startButton = document.querySelector('#btn-start');
-const pauseButton = document.querySelector('#btn-pause');
+const listenButton = document.querySelector('#btn-listen');
 
-const recordCheckbox = document.querySelector('#save-samples');
-const recordVolSlider = document.querySelector('#record-vol-slider');
+listenButton.onclick = () => {
+    const wrapperListen = document.querySelector('.wrapper-listen');
 
-const recordVolBox = document.querySelector('#record-vol-box');
-const indicatorCanvas = document.querySelector('#record-indicator');
+    wrapperListen.style.display = 'inline-block';
+    listenButton.disabled = true;
+    listenButton.style.display = 'none';
+}
 
-let recordVolume = 0.04;
-recordVolSlider.value = recordVolume;
-recordVolBox.value = recordVolume;
+const connectButton = document.querySelector('#btn-connect');
 
-scanButton.addEventListener('click', () => {
-    ponyTrainer.findToys().then(() => {
-        scanButton.disabled = false;
-        pauseButton.disabled = false;
-    });
-});
+connectButton.onclick = () => {
+    const results = document.querySelector('.wrapper-results');
 
-startButton.addEventListener('click', () => {
-    ponyTrainer.start();
-});
+    results.style.display = 'inline';
+}
 
-pauseButton.addEventListener('click', () => {
-    ponyTrainer.pause();
-});
+// let recordVolume = 0.04;
+// recordVolSlider.value = recordVolume;
+// recordVolBox.value = recordVolume;
 
-// recordCheckbox.addEventListener('click', () => {
-//     downloadButton.disabled = !recordCheckbox.checked;
+// scanButton.addEventListener('click', () => {
+//     ponyTrainer.findToys().then(() => {
+//         scanButton.disabled = false;
+//         pauseButton.disabled = false;
+//     });
 // });
 
-// recordVolSlider.addEventListener('input', (e) => {
-//     const vol = e.target.value;
-//     recorder.recordVol = vol;
-//     recordVolBox.value = vol;
+// startButton.addEventListener('click', () => {
+//     ponyTrainer.start();
 // });
 
-// recordVolBox.addEventListener('change', (e) => {
-//     const vol = e.target.value;
-//     recorder.recordVol = vol;
-//     recordVolSlider.value = vol;
+// pauseButton.addEventListener('click', () => {
+//     ponyTrainer.pause();
 // });
-
-const ctx = indicatorCanvas.getContext('2d');
-ctx.fillStyle = 'grey';
-ctx.fillRect(5, 5, 20, 20);
-
-startButton.addEventListener('click', () => {
-    const ctx = indicatorCanvas.getContext('2d');
-    ctx.fillStyle = 'red';
-    ctx.fillRect(5, 5, 20, 20);
-});
-
-pauseButton.addEventListener('click', () => {
-    const ctx = indicatorCanvas.getContext('2d');
-    ctx.fillStyle = 'grey';
-    ctx.fillRect(5, 5, 20, 20);
-});
