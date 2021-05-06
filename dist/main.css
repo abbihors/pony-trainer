@@ -32,7 +32,7 @@ a:hover {
 .footer p {
     font-size: 13px;
     margin-top: 7px;
-    margin-bottom: 0px;
+    padding-bottom: 5px;
 }
 
 .wrapper {
@@ -40,7 +40,8 @@ a:hover {
     margin: 0 auto;
     column-gap: 15px;
     grid-template-columns: 1fr 380px;
-    grid-template-rows: 95vh 20px;
+    grid-template-rows: 1fr 20px;
+    min-height: 98vh;
     max-width: 1600px;
 }
 
