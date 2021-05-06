@@ -14,10 +14,15 @@ listenButton.onclick = () => {
 
 const slider = document.querySelector('#threshold');
 
-slider.oninput = () => {
-    let recordVol = document.querySelector('.voicemeter-recordvol');
+slider.oninput = (e) => {
+    const newValue = e.target.value;
 
-    recordVol.style.transform = 'translateX(80px)';
+    let recordVol = document.querySelector('.voicemeter-recordvol');
+    let wrapper = document.querySelector('.voicemeter-wrapper');
+
+    const width = wrapper.offsetWidth;
+
+    recordVol.style.transform = `translateX(${newValue}px)`;
 }
 
 const connectButton = document.querySelector('#btn-connect');
