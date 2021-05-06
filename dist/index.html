@@ -56,7 +56,7 @@
                 <h3>Start listening</h3>
                 <p>Speak into the microphone and use the slider to adjust the voice activation threshold. Try to get it so that it only turns green when you speak.</p>
 
-                <input type="range" id="threshold" min="0" max="0.2" value="0.04" step="0.01">
+                <input type='range' id='threshold' min='0' max='1' value='0.4' step='0.01'>
 
                 <div class='voicemeter-wrapper'>
                     <div class='voicemeter-recordvol'></div>
@@ -68,10 +68,7 @@
                 <button id='btn-connect'>Connect a vibrator</button>
             </div>
             
-            <div class='wrapper-results'>
-                <p>▸ Lovense Hush v223</p>
-                <button id='btn-test'>Test vibration</button>
-            </div>
+            <div class='wrapper-results'></div>
 
             <div class='bars'>
                 <div class='progressbar-wrapper'>
@@ -88,9 +85,9 @@
     <script>
         let bar = document.querySelector('.voicemeter');
 
-        setInterval(() => {
-            bar.style.width = (Math.random() * (100 - 0) + 0) + '%';
-        }, 1500);
+        // setInterval(() => {
+        //     bar.style.width = (Math.random() * (100 - 0) + 0) + '%';
+        // }, 1500);
     </script>
 
     <script lang="javascript" src="https://cdn.jsdelivr.net/npm/buttplug@1.0.14/dist/web/buttplug.min.js"></script>
