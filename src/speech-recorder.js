@@ -11,6 +11,7 @@ export default class SpeechRecorder {
         this.recordVol = config.recordVol;
         this.maxSilenceS = config.maxSilenceS;
         this.prevAudioS = config.prevAudioS;
+        this.blocksize = BLOCKSIZE;
 
         this.onspeech = callback;
         this.volume = 0;
