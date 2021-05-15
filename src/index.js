@@ -2,6 +2,8 @@ import PonyTrainer from './pony-trainer';
 
 let ponyTrainer = new PonyTrainer();
 
+const SLOPE_FACTOR = -4;
+
 const listenButton = document.querySelector('#btn-listen');
 
 listenButton.onclick = () => {
@@ -15,16 +17,15 @@ listenButton.onclick = () => {
 const slider = document.querySelector('#threshold');
 let recordVol = document.querySelector('.voicemeter-recordvol');
 
-recordVol.style.transform = `translateX(${islope(0.5, -4) * 246}px)`;
-slider.value = islope(0.5, -4);
+recordVol.style.transform = `translateX(${islope(0.5, SLOPE_FACTOR) * 246}px)`;
+slider.value = islope(0.5, SLOPE_FACTOR);
 
 slider.oninput = (e) => {
     const newValue = e.target.value * 246;
 
     let recordVol = document.querySelector('.voicemeter-recordvol');
-    let wrapper = document.querySelector('.voicemeter-wrapper');
 
-    ponyTrainer.recorder.recordVol = islope(e.target.value, -4);
+    ponyTrainer.recorder.recordVol = islope(e.target.value, SLOPE_FACTOR);
     console.log(ponyTrainer.recorder.recordVol);
 
     recordVol.style.transform = `translateX(${newValue}px)`;
@@ -41,32 +42,22 @@ connectButton.onclick = () => {
     ponyTrainer.start();
 }
 
-let avgVol = 0;
-
 function updateVolume() {
     const vol = ponyTrainer.recorder.volume;
 
-    const k = -4; // Slope factor
-    const percentage = slope(vol, k) * 100;
+    const percentage = slope(vol, SLOPE_FACTOR) * 100;
 
     // update voice meter
     const meter = document.querySelector('.voicemeter');
     meter.style.width = `${percentage}%`;
 
-    // Update color depending on amount
-    // if (percentage > 50) {
-    //     meter.style.background = '#00c27b';
-    // } else {
-    //     meter.style.background = '#c29e00';
-    // }
-}
+    let wrapper = document.querySelector('.voicemeter-wrapper');
 
-function slope(x, k) {
-    return (Math.exp(k * x) - 1) / (Math.exp(k) - 1);
-}
-
-function islope(x, k) {
-    return Math.log((x * (Math.exp(k) - 1)) + 1) / k;
+    if (vol > ponyTrainer.recorder.recordVol) {
+        wrapper.style.filter = 'drop-shadow(0 0 4px #00aa00)';
+    } else if (!ponyTrainer.recorder.isRecording()){
+        wrapper.style.filter = '';
+    }
 }
 
 setInterval(updateVolume, 50);
@@ -102,3 +93,11 @@ function deviceAdded(deviceName) {
 // pauseButton.addEventListener('click', () => {
 //     ponyTrainer.pause();
 // });
+
+function slope(x, k) {
+    return (Math.exp(k * x) - 1) / (Math.exp(k) - 1);
+}
+
+function islope(x, k) {
+    return Math.log((x * (Math.exp(k) - 1)) + 1) / k;
+}

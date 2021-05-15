@@ -62,7 +62,7 @@ export default class SpeechRecorder {
         }
     }
 
-    _recordingStarted() {
+    isRecording() {
         return this.activeRecording.length > 0;
     }
 
@@ -75,7 +75,7 @@ export default class SpeechRecorder {
         // TODO: Could probably be refactored
         if (this.prevVolumes.queue.some(vol => vol > this.recordVol)) {
             this.activeRecording.push(new Float32Array(block));
-        } else if (this._recordingStarted()) {
+        } else if (this.isRecording()) {
             // Recording finished
             const recording = flatten(
                 this.prevBlocks.queue.concat(this.activeRecording)
