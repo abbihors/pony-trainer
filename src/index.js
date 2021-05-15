@@ -42,25 +42,33 @@ connectButton.onclick = () => {
     ponyTrainer.start();
 }
 
-function updateVolume() {
+let volumeMeterLevel = 0;
+
+function updateVolumeMeter() {
     const vol = ponyTrainer.recorder.volume;
 
-    const percentage = slope(vol, SLOPE_FACTOR) * 100;
+    let newVol = slope(vol, SLOPE_FACTOR) * 100;
 
-    // update voice meter
-    const meter = document.querySelector('.voicemeter');
-    meter.style.width = `${percentage}%`;
+    if (newVol < 1) {
+        newVol = 0;
+    }
+
+    if (Math.abs(volumeMeterLevel - newVol) > 1) {
+        volumeMeterLevel = newVol;
+        const meter = document.querySelector('.voicemeter');
+        meter.style.width = `${newVol}%`;
+    }
 
     let wrapper = document.querySelector('.voicemeter-wrapper');
 
     if (vol > ponyTrainer.recorder.recordVol) {
         wrapper.style.filter = 'drop-shadow(0 0 4px #00aa00)';
-    } else if (!ponyTrainer.recorder.isRecording()){
+    } else if (!ponyTrainer.recorder.isRecording()) {
         wrapper.style.filter = '';
     }
 }
 
-setInterval(updateVolume, 50);
+setInterval(updateVolumeMeter, 50);
 
 function deviceAdded(deviceName) {
     const results = document.querySelector('.wrapper-results');
