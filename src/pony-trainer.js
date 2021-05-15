@@ -52,8 +52,7 @@ export default class PonyTrainer {
             layersModel.predict(tf.zeros([1, 40, 32, 1]));
             this.model = layersModel;
 
-            this.recorder.start();
-            this.ticker = setInterval(this._tick.bind(this), TICKRATE);
+            this.resume();
         });
     }
 
