@@ -75,6 +75,15 @@ export default class PonyTrainer {
         clearInterval(this.ticker);
     }
 
+    async deny() {
+        this.neighsToResume = getRandomInt(
+            MIN_DENIAL_NEIGHS,
+            MAX_DENIAL_NEIGHS
+        );
+        await this.vibrator.stop();
+        console.log(`Denied! neighs to resume: ${this.neighsToResume}`); // DEBUG
+    }
+
     get denied() {
         return this.neighsToResume > 0;
     }
@@ -82,19 +91,14 @@ export default class PonyTrainer {
     async _tick() {
         if (this.denied) return;
 
-        if (!this.vibrator.busy()) {
-            await this._decayStep();
-        }
-
         this.ticksToDenial = Math.max(0, this.ticksToDenial - 1);
 
-        if (!this.vibrator.busy() && this.ticksToDenial === 0) {
-            await this.vibrator.stop();
-            this.neighsToResume = getRandomInt(
-                MIN_DENIAL_NEIGHS,
-                MAX_DENIAL_NEIGHS
-            );
-            console.log(`Denied! neighs to resume: ${this.neighsToResume}`); // DEBUG
+        if (!this.vibrator.busy()) {
+            await this._decayStep();
+
+            if (this.ticksToDenial === 0) {
+                await this.deny();
+            }
         }
     }
 
@@ -144,8 +148,9 @@ export default class PonyTrainer {
             this.neighsToResume -= 1;
 
             if (this.neighsToResume === 0) {
-                this.ticksToDenial = this._rollTicksToDenial();
+                this._increaseBackgroundVibration();
                 await this.runWeightedRandomPattern();
+                this.ticksToDenial = this._rollTicksToDenial();
             }
         }
     }
@@ -177,7 +182,7 @@ export default class PonyTrainer {
     }
 
     async testVibrate() {
-        await this.runCmd([0.2, 400, 200]);
+        await this.vibrator.testVibrate();
     }
 }
 
