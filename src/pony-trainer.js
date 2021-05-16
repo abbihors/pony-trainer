@@ -41,6 +41,7 @@ export default class PonyTrainer {
         this.predicting = false;
         this.ticksToDenial = this._rollTicksToDenial();
         this.neighsToResume = 0;
+        this.neighCount = 0;
     }
 
     findToys() {
@@ -90,6 +91,7 @@ export default class PonyTrainer {
 
     async _tick() {
         if (this.denied) return;
+        if (this.neighCount === 0) return;
 
         this.ticksToDenial = Math.max(0, this.ticksToDenial - 1);
 
@@ -141,6 +143,8 @@ export default class PonyTrainer {
     }
 
     async _rewardPony() {
+        this.neighCount += 1;
+
         if (!this.denied) {
             this._increaseBackgroundVibration();
             await this.runWeightedRandomPattern();
