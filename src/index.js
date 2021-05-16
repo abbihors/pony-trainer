@@ -12,6 +12,8 @@ listenButton.onclick = () => {
     wrapperListen.style.display = 'inline-block';
     listenButton.disabled = true;
     listenButton.style.display = 'none';
+
+    ponyTrainer.startListening();
 }
 
 const slider = document.querySelector('#threshold');
@@ -34,12 +36,31 @@ slider.oninput = (e) => {
 const connectButton = document.querySelector('#btn-connect');
 
 connectButton.onclick = () => {
-    const results = document.querySelector('.wrapper-results');
+    // Unhide device list
+    const deviceList = document.querySelector('.wrapper-device-list');
+    deviceList.style.display = 'inline';
 
-    results.style.display = 'inline';
+    ponyTrainer.findToys().then((deviceName) => {
+        deviceAdded(deviceName);
+        ponyTrainer.start();
+    });
+}
 
-    // FIND TOYS
-    ponyTrainer.start();
+function deviceAdded(deviceName) {
+    const results = document.querySelector('.wrapper-device-list');
+    let deviceLine = document.createElement('p');
+    let testButton = document.createElement('button');
+
+    testButton.onclick = async () => {
+        await ponyTrainer.testVibrate();
+    }
+
+    deviceLine.innerText = `▸ ${deviceName}`;
+    testButton.className = 'pt-button-test';
+    testButton.innerText = 'Test vibration';
+
+    results.append(deviceLine);
+    results.append(testButton);
 }
 
 let volumeMeterLevel = 0;
@@ -69,38 +90,6 @@ function updateVolumeMeter() {
 }
 
 setInterval(updateVolumeMeter, 50);
-
-function deviceAdded(deviceName) {
-    const results = document.querySelector('.wrapper-results');
-    let deviceLine = document.createElement('p');
-    let testButton = document.createElement('button');
-
-    deviceLine.innerText = `▸ ${deviceName}`;
-    testButton.className = 'pt-button-test';
-    testButton.innerText = 'Test vibration';
-
-    results.append(deviceLine);
-    results.append(testButton);
-}
-
-// let recordVolume = 0.04;
-// recordVolSlider.value = recordVolume;
-// recordVolBox.value = recordVolume;
-
-// scanButton.addEventListener('click', () => {
-//     ponyTrainer.findToys().then(() => {
-//         scanButton.disabled = false;
-//         pauseButton.disabled = false;
-//     });
-// });
-
-// startButton.addEventListener('click', () => {
-//     ponyTrainer.start();
-// });
-
-// pauseButton.addEventListener('click', () => {
-//     ponyTrainer.pause();
-// });
 
 function slope(x, k) {
     return (Math.exp(k * x) - 1) / (Math.exp(k) - 1);

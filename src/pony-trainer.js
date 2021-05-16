@@ -38,12 +38,21 @@ export default class PonyTrainer {
 
         this.vibrator = new Vibrator('Pony Trainer');
 
+        this.predicting = false;
         this.ticksToDenial = this._rollTicksToDenial();
         this.neighsToResume = 0;
     }
 
     findToys() {
         return this.vibrator.findToys();
+    }
+
+    startListening() {
+        this.recorder.start();
+    }
+
+    stopListening() {
+        this.recorder.stop();
     }
 
     start() {
@@ -57,12 +66,12 @@ export default class PonyTrainer {
     }
 
     resume() {
-        this.recorder.start();
+        this.predicting = true;
         this.ticker = setInterval(this._tick.bind(this), TICKRATE);
     }
 
     pause() {
-        this.recorder.stop();
+        this.predicting = false;
         clearInterval(this.ticker);
     }
 
@@ -105,6 +114,8 @@ export default class PonyTrainer {
     }
 
     async _processSpeech(recording) {
+        if (!this.predicting) return;
+
         recording = trim(recording, SAMPLERATE, true);
 
         const mfccs = mfcc(recording, SAMPLERATE, N_FFT, N_MFCC);
@@ -139,9 +150,13 @@ export default class PonyTrainer {
         }
     }
 
+    async runCmd(cmd) {
+        await this.vibrator.vibrate(cmd[0], cmd[1], cmd[2]);
+    }
+
     async runPattern(pattern) {
         for (let cmd of pattern.cmds) {
-            await this.vibrator.vibrate(cmd[0], cmd[1], cmd[2]);
+            await this.runCmd(cmd);
         }
     }
 
@@ -159,6 +174,10 @@ export default class PonyTrainer {
 
         await this.runPattern(winner);
         console.log(`Running pattern: ${winnerName}`); // DEBUG
+    }
+
+    async testVibrate() {
+        await this.runCmd([0.2, 400, 200]);
     }
 }
 

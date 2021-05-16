@@ -25,7 +25,8 @@ export default class Vibrator {
         return new Promise((resolve) => {
             this.client.addListener("deviceadded", async (device) => {
                 this.device = device;
-                resolve();
+                console.log(device.Name);
+                resolve(device.Name);
             });
         });
     }

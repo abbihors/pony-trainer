@@ -123,7 +123,7 @@ button:hover {
 }
 
 .voicemeter {
-    width: 50%;
+    width: 0%;
     height: 100%;
     background: #00c27b;
 }
@@ -140,11 +140,11 @@ button:hover {
     margin-right: 0px;
 }
 
-.wrapper-results {
+.wrapper-device-list {
     display: none;
 }
 
-.wrapper-results p {
+.wrapper-device-list p {
     display: inline-block;
     margin-bottom: 0px;
 }
