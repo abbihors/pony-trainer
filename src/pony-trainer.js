@@ -42,6 +42,8 @@ export default class PonyTrainer {
         this.ticksToDenial = this._rollTicksToDenial();
         this.neighsToResume = 0;
         this.neighCount = 0;
+
+        this.maxBackgroundStrength = MAX_BACKGROUND_STRENGTH;
     }
 
     findToys() {
@@ -109,7 +111,7 @@ export default class PonyTrainer {
         const newLevel = Math.max(0, current - 1 / (FULL_DECAY_MS / TICKRATE));
 
         await this.vibrator.setVibrationLevel(newLevel);
-        console.log(`Decrementing vibrator: ${newLevel}`); // DEBUG
+        // console.log(`Decrementing vibrator: ${newLevel}`); // DEBUG
     }
 
     _rollTicksToDenial() {

@@ -98,3 +98,28 @@ function slope(x, k) {
 function islope(x, k) {
     return Math.log((x * (Math.exp(k) - 1)) + 1) / k;
 }
+
+let barPercentage = 0;
+
+function updateProgressBar() {
+    const level = ponyTrainer.vibrator.vibrationLevel;
+
+    let progressBar = document.querySelector('.progressbar');
+    const percentage = (level / ponyTrainer.maxBackgroundStrength) * 100;
+    const percentageStr = `${percentage}%`;
+    
+    if (percentage !== barPercentage) {
+        barPercentage = percentage;
+        progressBar.style.width = percentageStr;
+    }
+
+    if (!ponyTrainer.denied && progressBar.style.backgroundColor !== 'rgb(0, 194, 123)') {
+        progressBar.style.backgroundColor = 'rgb(0, 194, 123)';
+    }
+
+    if (ponyTrainer.denied && progressBar.style.backgroundColor !== 'rgb(171, 171, 171)') {
+        progressBar.style.backgroundColor = 'rgb(171, 171, 171)';
+    }
+}
+
+setInterval(updateProgressBar, 200);
