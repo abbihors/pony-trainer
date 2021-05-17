@@ -60,12 +60,6 @@ export default class Vibrator {
         }
     }
 
-    async testVibrate() {
-        if (this.vibrationLevel === 0) {
-            await this.vibrate(0.2, 700, 0);
-        }
-    }
-
     async _runNextInQueue() {
         const cmd = this.queue.front();
         await this._vibrateFor(cmd[0], cmd[1], cmd[2]);

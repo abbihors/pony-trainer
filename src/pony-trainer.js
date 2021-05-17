@@ -188,7 +188,9 @@ export default class PonyTrainer {
     }
 
     async testVibrate() {
-        await this.vibrator.testVibrate();
+        if (this.vibrator.vibrationLevel === 0) {
+            await this.vibrator.vibrate(0.2, 700, 0);
+        }
     }
 }
 
