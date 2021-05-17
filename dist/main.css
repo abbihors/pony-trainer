@@ -103,6 +103,19 @@ button:hover {
     transition: width 500ms;
 }
 
+.progressbar-icon {
+    user-select: none;
+    display: absolute;
+    visibility: hidden;
+    float: left;
+    transform: rotate(90deg) translate(9px, -201px);
+}
+
+.progressbar-icon img {
+    width: 26px;
+    height: 26px;
+}
+
 .voicemeter-wrapper {
     width: 250px;
     height: 20px;

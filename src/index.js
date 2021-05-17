@@ -100,6 +100,7 @@ function islope(x, k) {
 }
 
 let barPercentage = 0;
+let denied = false;
 
 function updateProgressBar() {
     const level = ponyTrainer.vibrator.vibrationLevel;
@@ -109,16 +110,23 @@ function updateProgressBar() {
     const percentageStr = `${percentage}%`;
     
     if (percentage !== barPercentage) {
-        barPercentage = percentage;
         progressBar.style.width = percentageStr;
+        barPercentage = percentage;
     }
 
-    if (!ponyTrainer.denied && progressBar.style.backgroundColor !== 'rgb(0, 194, 123)') {
-        progressBar.style.backgroundColor = 'rgb(0, 194, 123)';
-    }
+    let icon = document.querySelector('.progressbar-icon');
 
-    if (ponyTrainer.denied && progressBar.style.backgroundColor !== 'rgb(171, 171, 171)') {
-        progressBar.style.backgroundColor = 'rgb(171, 171, 171)';
+    // Only update if we need to update
+    if (ponyTrainer.denied !== denied) {
+        if (ponyTrainer.denied) {
+            icon.style.visibility = 'visible';
+            progressBar.style.backgroundColor = 'rgb(214 214 214)';
+        } else {
+            icon.style.visibility = 'hidden';
+            progressBar.style.backgroundColor = 'rgb(0, 194, 123)';
+        }
+
+        denied = ponyTrainer.denied;
     }
 }
 
