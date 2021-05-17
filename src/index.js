@@ -1,9 +1,12 @@
 import PonyTrainer from './pony-trainer';
+import { getRandom, getRandomInt } from './utils/random';
 
 const COLOR_ACCENT = '#00c27b';
 const COLOR_PROGRESSBAR_DISABLED = '#d6d6d6';
 
 let ponyTrainer = new PonyTrainer();
+
+ponyTrainer.onRewardPony = explodePonies;
 
 const SLOPE_FACTOR = -4;
 
@@ -111,7 +114,7 @@ function updateProgressBar() {
     let progressBar = document.querySelector('.progressbar');
     const percentage = (level / ponyTrainer.maxBackgroundStrength) * 100;
     const percentageStr = `${percentage}%`;
-    
+
     if (percentage !== barPercentage) {
         progressBar.style.width = percentageStr;
         barPercentage = percentage;
@@ -134,3 +137,62 @@ function updateProgressBar() {
 }
 
 setInterval(updateProgressBar, 200);
+
+function explodePonies() {
+    const numPonies = getRandomInt(10, 16);
+    const numHearts = getRandomInt(3, 6);
+
+    // Create ponies and give them random directions
+    for (let i = 0; i < numPonies; i++) {
+        let ponyElem = createExplodingEmoji('🐴');
+        document.body.appendChild(ponyElem);
+    }
+
+    for (let i = 0; i < numHearts; i++) {
+        let heartElem = createExplodingEmoji('💙');
+        document.body.appendChild(heartElem);
+    }
+
+    // Delete them when done
+    setTimeout(() => {
+        let ponies = document.querySelectorAll('.floating');
+
+        for (let i = 0; i < ponies.length; i++) {
+            document.body.removeChild(ponies[i]);
+        }
+    }, 1000);
+}
+
+function createExplodingEmoji(text) {
+    let elem = document.createElement('div');
+
+    elem.className = 'floating';
+    elem.innerHTML = text;
+
+    const scaleFactor = 400;
+    let randomX = getRandom(-1, 1) * scaleFactor;
+    let randomY = getRandom(-1, 1) * scaleFactor;
+
+    elem.animate([
+        {
+            transform: 'translateX(0px) translateY(0px)',
+            opacity: 1
+        },
+        {
+            opacity: 0.8
+        },
+        {
+            opacity: 0.7
+        },
+        {
+            transform: `translateX(${randomX}px) translateY(${randomY}px)`,
+            opacity: 0
+        }], {
+        fill: 'forwards',
+        easing: 'ease-out',
+        duration: 1000,
+        iterations: 1,
+    });
+
+    return elem;
+}

@@ -14,6 +14,7 @@ html, body {
 
 body {
     font-family: 'Open Sans', sans-serif;
+    position: relative;
     background-color: var(--divider);
 }
 
@@ -216,4 +217,12 @@ input[type=range]::-webkit-slider-runnable-track {
 
 input[type=range]:focus::-webkit-slider-runnable-track {
     background: var(--accent-light);
+}
+
+.floating {
+    user-select: none;
+    font-size: 46px;
+    left: 45%;
+    top: 40%;
+    position: absolute;
 }

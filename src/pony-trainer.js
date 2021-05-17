@@ -145,6 +145,10 @@ export default class PonyTrainer {
     }
 
     async _rewardPony() {
+        if (this.onRewardPony !== undefined) {
+            this.onRewardPony();
+        }
+
         this.neighCount += 1;
 
         if (!this.denied) {
