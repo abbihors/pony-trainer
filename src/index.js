@@ -1,5 +1,8 @@
 import PonyTrainer from './pony-trainer';
 
+const COLOR_ACCENT = '#00c27b';
+const COLOR_PROGRESSBAR_DISABLED = '#d6d6d6';
+
 let ponyTrainer = new PonyTrainer();
 
 const SLOPE_FACTOR = -4;
@@ -120,10 +123,10 @@ function updateProgressBar() {
     if (ponyTrainer.denied !== denied) {
         if (ponyTrainer.denied) {
             icon.style.visibility = 'visible';
-            progressBar.style.backgroundColor = 'rgb(214 214 214)';
+            progressBar.style.backgroundColor = COLOR_PROGRESSBAR_DISABLED;
         } else {
             icon.style.visibility = 'hidden';
-            progressBar.style.backgroundColor = 'rgb(0, 194, 123)';
+            progressBar.style.backgroundColor = COLOR_ACCENT;
         }
 
         denied = ponyTrainer.denied;
