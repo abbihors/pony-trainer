@@ -2,7 +2,7 @@ import PonyTrainer from './pony-trainer';
 import { getRandom, getRandomInt } from './utils/random';
 
 const COLOR_ACCENT = '#00c27b';
-const COLOR_PROGRESSBAR_DISABLED = '#d6d6d6';
+const COLOR_PROGRESSBAR_DISABLED = '#bebebe';
 
 let ponyTrainer = new PonyTrainer();
 

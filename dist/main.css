@@ -258,3 +258,14 @@ input[type=range]:focus::-webkit-slider-runnable-track {
     background-color: var(--error);
     border-radius: 16px;
 }
+
+.progressbar-outline {
+    width: 244px;
+    height: 44px;
+    background-color: transparent;
+    border-color: var(--background-color);
+    border-style: solid;
+    border-radius: 30px;
+    position: absolute;
+    transform: translate(0px, 0px);
+}
