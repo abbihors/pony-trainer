@@ -20,6 +20,7 @@ body {
 
 h1 {
     font-weight: bold;
+    margin-bottom: 5px;
 }
 
 a {
@@ -225,4 +226,24 @@ input[type=range]:focus::-webkit-slider-runnable-track {
     left: 45%;
     top: 40%;
     position: absolute;
+}
+
+.sample {
+    display: inline-block;
+    margin-top: 0px;
+    margin-left: 15px;
+    margin-right: 15px;
+    margin-bottom: 5px;
+}
+
+.subtitle p {
+    margin: 0px;
+}
+
+.icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 16px;
+    display: inline;
+    float: left;
 }
