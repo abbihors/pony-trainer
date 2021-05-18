@@ -6,6 +6,7 @@
     --divider: #e1f1dd;
     --background-color: white;
     --shadow: #b9b9b9;
+    --error: #ffa4a4;
 }
 
 html, body {
@@ -248,4 +249,12 @@ input[type=range]:focus::-webkit-slider-runnable-track {
 .inline-lock {
     width: 16px;
     height: 16px;
+}
+
+.error {
+    display: none;
+    margin: 10px;
+    padding: 10px;
+    background-color: var(--error);
+    border-radius: 16px;
 }

@@ -36,9 +36,15 @@ export default class SpeechRecorder {
     // Has to be run in response to a user gesture
     async init() {
         const audioCtx = new AudioContext({ sampleRate: this.sampleRate });
-        const stream = await navigator.mediaDevices.getUserMedia({
-            'audio': true
-        });
+        let stream;
+
+        try {
+            stream = await navigator.mediaDevices.getUserMedia({
+                'audio': true
+            });
+        } catch (error) {
+            throw new Error("Couldn't get microphone");
+        }
 
         const mediaStream = audioCtx.createMediaStreamSource(stream);
 
@@ -89,7 +95,7 @@ export default class SpeechRecorder {
     }
 
     start() {
-        this.init().then(() => {
+        return this.init().then(() => {
             this.resume();
         });
     }

@@ -14,14 +14,21 @@ const listenButton = document.querySelector('#btn-listen');
 const connectButton = document.querySelector('#btn-connect');
 const playPauseButton = document.querySelector('#btn-play-pause');
 
+const listenError = document.querySelector('#err-listen');
+
 listenButton.onclick = () => {
-    const wrapperListen = document.querySelector('.wrapper-listen');
+    ponyTrainer.startListening().then(() => {
+        const wrapperListen = document.querySelector('.wrapper-listen');
 
-    wrapperListen.style.display = 'inline-block';
-    listenButton.disabled = true;
-    listenButton.style.display = 'none';
+        wrapperListen.style.display = 'inline-block';
+        listenButton.disabled = true;
+        listenButton.style.display = 'none';
 
-    ponyTrainer.startListening();
+        listenError.style.display = 'none';
+    }).catch((err) => {
+        console.log(err);
+        listenError.style.display = 'block';
+    });
 }
 
 const slider = document.querySelector('#threshold');
@@ -52,6 +59,8 @@ connectButton.onclick = () => {
 }
 
 function deviceAdded(deviceName) {
+    playPauseButton.style.visibility = 'visible';
+
     const results = document.querySelector('.wrapper-device-list');
     let deviceLine = document.createElement('p');
     let testButton = document.createElement('button');
@@ -66,8 +75,6 @@ function deviceAdded(deviceName) {
 
     results.append(deviceLine);
     results.append(testButton);
-
-    playPauseButton.style.visibility = 'visible';
 }
 
 let volumeMeterLevel = 0;

@@ -51,7 +51,7 @@ export default class PonyTrainer {
     }
 
     startListening() {
-        this.recorder.start();
+        return this.recorder.start();
     }
 
     stopListening() {
