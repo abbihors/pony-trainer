@@ -59,23 +59,29 @@ export default class PonyTrainer {
     }
 
     start() {
-        tf.loadLayersModel('./assets/model.json').then((layersModel) => {
+        tf.loadLayersModel('./assets/model.json').then(async (layersModel) => {
             // Warm up model by giving it an empty input tensor
             layersModel.predict(tf.zeros([1, 40, 32, 1]));
             this.model = layersModel;
 
-            this.resume();
+            await this.resume();
         });
     }
 
-    resume() {
+    async resume() {
         this.predicting = true;
         this.ticker = setInterval(this._tick.bind(this), TICKRATE);
+
+        if (!this.denied) {
+            await this.vibrator.resume();
+        }
     }
 
-    pause() {
+    async pause() {
         this.predicting = false;
         clearInterval(this.ticker);
+
+        await this.vibrator.pause();
     }
 
     async deny() {
@@ -84,7 +90,6 @@ export default class PonyTrainer {
             MAX_DENIAL_NEIGHS
         );
         await this.vibrator.stop();
-        console.log(`Denied! neighs to resume: ${this.neighsToResume}`); // DEBUG
     }
 
     get denied() {
@@ -111,7 +116,6 @@ export default class PonyTrainer {
         const newLevel = Math.max(0, current - 1 / (FULL_DECAY_MS / TICKRATE));
 
         await this.vibrator.setVibrationLevel(newLevel);
-        // console.log(`Decrementing vibrator: ${newLevel}`); // DEBUG
     }
 
     _rollTicksToDenial() {
@@ -128,8 +132,6 @@ export default class PonyTrainer {
 
         const mfccs = mfcc(recording, SAMPLERATE, N_FFT, N_MFCC);
         const prediction = predict(this.model, mfccs);
-
-        console.log(prediction); // DEBUG
 
         if (prediction === "animal") {
             if (!this.vibrator.busy()) {
@@ -188,7 +190,6 @@ export default class PonyTrainer {
         const winner = patterns[winnerName];
 
         await this.runPattern(winner);
-        console.log(`Running pattern: ${winnerName}`); // DEBUG
     }
 
     async testVibrate() {

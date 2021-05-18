@@ -240,10 +240,12 @@ input[type=range]:focus::-webkit-slider-runnable-track {
     margin: 0px;
 }
 
-.icon {
-    width: 32px;
-    height: 32px;
-    border-radius: 16px;
-    display: inline;
-    float: left;
+#btn-play-pause {
+    transform: translate(0, 220px);
+    visibility: hidden;
+}
+
+.inline-lock {
+    width: 16px;
+    height: 16px;
 }

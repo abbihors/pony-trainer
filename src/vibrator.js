@@ -6,6 +6,8 @@ export default class Vibrator {
         this.queue = new Queue();
         this.vibrationLevel = 0.0;
         this.maxStrength = maxStrength;
+        this.timeout1 = 0;
+        this.timeout2 = 0;
     }
 
     async _initButtplug() {
@@ -52,6 +54,22 @@ export default class Vibrator {
         await this.device.stop();
     }
 
+    async pause() {
+        // Clear timeouts
+        clearTimeout(this.timeout1);
+        clearTimeout(this.timeout2);
+
+        // Empty queue
+        this.queue = new Queue();
+
+        // Stop vibrator
+        await this.stop();
+    }
+
+    async resume() {
+        this._restoreBackgroundLevel();
+    }
+
     async vibrate(strength, onMs, offMs) {
         this.queue.enqueue([strength, onMs, offMs]);
 
@@ -70,18 +88,18 @@ export default class Vibrator {
         await this._safeVibrate(strength);
 
         if (offMs > 0) {
-            setTimeout(async () => {
+            this.timeout1 = setTimeout(async () => {
                 await this._restoreBackgroundLevel();
             }, onMs);
 
-            setTimeout(async () => {
+            this.timeout2 = setTimeout(async () => {
                 this.queue.dequeue();
                 if (!this.queue.empty()) {
                     await this._runNextInQueue();
                 }
             }, onMs + offMs);
         } else {
-            setTimeout(async () => {
+            this.timeout1 = setTimeout(async () => {
                 this.queue.dequeue();
                 if (!this.queue.empty()) {
                     await this._runNextInQueue();

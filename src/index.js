@@ -11,6 +11,8 @@ ponyTrainer.onRewardPony = explodePonies;
 const SLOPE_FACTOR = -4;
 
 const listenButton = document.querySelector('#btn-listen');
+const connectButton = document.querySelector('#btn-connect');
+const playPauseButton = document.querySelector('#btn-play-pause');
 
 listenButton.onclick = () => {
     const wrapperListen = document.querySelector('.wrapper-listen');
@@ -34,12 +36,9 @@ slider.oninput = (e) => {
     let recordVol = document.querySelector('.voicemeter-recordvol');
 
     ponyTrainer.recorder.recordVol = islope(e.target.value, SLOPE_FACTOR);
-    console.log(ponyTrainer.recorder.recordVol);
 
     recordVol.style.transform = `translateX(${newValue}px)`;
 }
-
-const connectButton = document.querySelector('#btn-connect');
 
 connectButton.onclick = () => {
     // Unhide device list
@@ -67,6 +66,8 @@ function deviceAdded(deviceName) {
 
     results.append(deviceLine);
     results.append(testButton);
+
+    playPauseButton.style.visibility = 'visible';
 }
 
 let volumeMeterLevel = 0;
@@ -195,4 +196,18 @@ function createExplodingEmoji(text) {
     });
 
     return elem;
+}
+
+let paused = false;
+
+playPauseButton.onclick = () => {
+    if (!paused) {
+        ponyTrainer.pause();
+        playPauseButton.innerHTML = 'Resume';
+    } else {
+        ponyTrainer.resume();
+        playPauseButton.innerHTML = 'Pause';
+    }
+
+    paused = !paused;
 }
