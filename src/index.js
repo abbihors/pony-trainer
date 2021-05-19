@@ -16,6 +16,10 @@ const playPauseButton = document.querySelector('#btn-play-pause');
 
 const listenError = document.querySelector('#err-listen');
 
+const intifaceConnectWrapper = document.querySelector('.wrapper-intiface');
+const intifaceConnectButton = document.querySelector('#btn-intiface-connect');
+const intifaceConnectError = document.querySelector('#intiface-connect-err');
+
 listenButton.onclick = () => {
     ponyTrainer.startListening().then(() => {
         const wrapperListen = document.querySelector('.wrapper-listen');
@@ -52,9 +56,29 @@ connectButton.onclick = () => {
     const deviceList = document.querySelector('.wrapper-device-list');
     deviceList.style.display = 'inline';
 
-    ponyTrainer.findToys().then((deviceName) => {
+    if (bluetoothSupported()) {
+        ponyTrainer.findToysWebBluetooth().then((deviceName) => {
+            deviceAdded(deviceName);
+            ponyTrainer.start();
+        });
+
+        intifaceConnectWrapper.style.display = 'none';
+    } else {
+        intifaceConnectWrapper.style.display = 'block';
+    }
+}
+
+intifaceConnectButton.onclick = () => {
+    const address = document.querySelector('#intiface-addr').value;
+
+    ponyTrainer.findToysIntifaceDesktop(address).then((deviceName) => {
         deviceAdded(deviceName);
         ponyTrainer.start();
+
+        intifaceConnectWrapper.style.display = 'none';
+        intifaceConnectError.style.display = 'none';
+    }).catch((err) => {
+        intifaceConnectError.style.display = 'block';
     });
 }
 
@@ -70,7 +94,7 @@ function deviceAdded(deviceName) {
     }
 
     deviceLine.innerText = `▸ ${deviceName}`;
-    testButton.className = 'pt-button-test';
+    testButton.className = 'button-small';
     testButton.innerText = 'Test vibration';
 
     results.append(deviceLine);
@@ -217,4 +241,10 @@ playPauseButton.onclick = () => {
     }
 
     paused = !paused;
+}
+
+function bluetoothSupported() {
+    if (window.Bluetooth !== undefined) {
+        return true;
+    }
 }

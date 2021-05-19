@@ -3,32 +3,69 @@ import { Queue } from './utils/queue';
 export default class Vibrator {
     constructor(appName, maxStrength = 1.0) {
         this.appName = appName;
+        this.device = null;
         this.queue = new Queue();
         this.vibrationLevel = 0.0;
         this.maxStrength = maxStrength;
         this.timeout1 = 0;
         this.timeout2 = 0;
+        this.connector = null;
+        this.client = null;
     }
 
-    async _initButtplug() {
+    async _initButtplugWebBluetooth() {
         await Buttplug.buttplugInit();
 
-        this.client = new Buttplug.ButtplugClient(this.appName);
         this.connector = new Buttplug.ButtplugEmbeddedConnectorOptions();
+        this.client = new Buttplug.ButtplugClient(this.appName);
 
-        await this.client.connect(this.connector);
+        try {
+            await this.client.connect(this.connector);
+        } catch (err) {
+            throw err;
+        }
+    }
+
+    async _initButtplugIntifaceDesktop(address) {
+        await Buttplug.buttplugInit();
+
+        this.connector = new Buttplug.ButtplugWebsocketConnectorOptions();
+        this.connector.address = `ws://${address}`;
+
+        this.client = new Buttplug.ButtplugClient(this.appName);
+
+        try {
+            await this.client.connect(this.connector);
+        } catch (err) {
+            throw err;
+        }
+    }
+
+    async findToysWebBluetooth() {
+        await this._initButtplugWebBluetooth();
+        return this.findToys();
+    }
+
+    async findToysIntifaceDesktop(address) {
+        await this._initButtplugIntifaceDesktop(address);
+        return this.findToys();
     }
 
     // Must be run in response to user gesture
     async findToys() {
-        await this._initButtplug();
-        await this.client.startScanning();
+        return new Promise(async (resolve) => {
+            this.client.addListener("deviceremoved", (device) => {
+                this.device = null;
+            });
 
-        return new Promise((resolve) => {
-            this.client.addListener("deviceadded", async (device) => {
+            this.client.addListener("deviceadded", (device) => {
+                this.client.stopScanning();
+
                 this.device = device;
                 resolve(device.Name);
             });
+
+            await this.client.startScanning();
         });
     }
 

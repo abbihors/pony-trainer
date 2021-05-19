@@ -46,8 +46,12 @@ export default class PonyTrainer {
         this.maxBackgroundStrength = MAX_BACKGROUND_STRENGTH;
     }
 
-    findToys() {
-        return this.vibrator.findToys();
+    findToysWebBluetooth() {
+        return this.vibrator.findToysWebBluetooth();
+    }
+
+    findToysIntifaceDesktop(address) {
+        return this.vibrator.findToysIntifaceDesktop(address);
     }
 
     startListening() {

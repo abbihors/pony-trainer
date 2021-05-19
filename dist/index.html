@@ -72,6 +72,13 @@
                 <button id='btn-connect'>Connect a vibrator</button>
             </div>
             
+            <div class='wrapper-intiface'>
+                <div class='info'>Bluetooth is unsupported by your browser. You can still use the app, but you'll have to install and run the <a href='https://intiface.com/desktop/'>Intiface Desktop server</a> to use it. Once it's running, enter the server address below and connect.</div>
+                <input id='intiface-addr' value='127.0.0.1:12345'>
+                <button id='btn-intiface-connect'>Connect</button>
+                <div id='intiface-connect-err' class='error'>Error: Couldn't connect to Intiface Desktop server. Make sure that the server has been started and that the address is correct.</div>
+            </div>
+
             <div class='wrapper-device-list'></div>
             
             <div class='bars'>
