@@ -21,7 +21,7 @@ export default class SpeechRecorder {
     }
 
     _resetRecorder() {
-        const blocksPerSec = Math.round(this.sampleRate / BLOCKSIZE);
+        const blocksPerSec = Math.round(this.sampleRate / this.blocksize);
 
         this.prevVolumes = new BoundedQueue(
             Math.round(blocksPerSec * this.maxSilenceS)
@@ -48,6 +48,11 @@ export default class SpeechRecorder {
             this.resampler = new Resampler(
                 audioCtx.sampleRate, this.sampleRate, 1, BLOCKSIZE
             );
+
+            this.blocksize = BLOCKSIZE * (this.sampleRate / audioCtx.sampleRate);
+
+            // Reset recorder with new blocksize
+            this._resetRecorder();
         }
 
         let stream;
@@ -63,7 +68,7 @@ export default class SpeechRecorder {
         const mediaStream = audioCtx.createMediaStreamSource(stream);
 
         const recorder = audioCtx.createScriptProcessor(
-            this.blocksize, this.channels, this.channels
+            BLOCKSIZE, this.channels, this.channels
         );
 
         recorder.onaudioprocess = (event) => {
@@ -132,7 +137,7 @@ export default class SpeechRecorder {
 }
 
 function flatten(buffers) {
-    const bufSize = BLOCKSIZE;
+    const bufSize = buffers[0].length;
     let out = new Float32Array(bufSize * buffers.length);
 
     for (let i = 0; i < buffers.length; i++) {
