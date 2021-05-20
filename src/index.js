@@ -56,16 +56,23 @@ connectButton.onclick = () => {
     const deviceList = document.querySelector('.wrapper-device-list');
     deviceList.style.display = 'inline';
 
-    if (bluetoothSupported()) {
-        ponyTrainer.findToysWebBluetooth().then((deviceName) => {
-            deviceAdded(deviceName);
-            ponyTrainer.start();
-        });
+    // Use Web Bluetooth if it's available, bring up the Intiface
+    // connect UI if the user is missing an adapter or doesn't have Web
+    // Bluetooth
+    navigator.bluetooth.getAvailability().then((available) => {
+        if (available) {
+            ponyTrainer.findToysWebBluetooth().then((deviceName) => {
+                deviceAdded(deviceName);
+                ponyTrainer.start();
+            });
 
-        intifaceConnectWrapper.style.display = 'none';
-    } else {
+            intifaceConnectWrapper.style.display = 'none';
+        } else {
+            intifaceConnectWrapper.style.display = 'block';
+        }
+    }).catch((err) => {
         intifaceConnectWrapper.style.display = 'block';
-    }
+    });
 }
 
 intifaceConnectButton.onclick = () => {
@@ -241,10 +248,4 @@ playPauseButton.onclick = () => {
     }
 
     paused = !paused;
-}
-
-function bluetoothSupported() {
-    if (window.Bluetooth !== undefined) {
-        return true;
-    }
 }
