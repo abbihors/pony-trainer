@@ -1,6 +1,7 @@
 // Voice activated speech recorder
 
 import { BoundedQueue } from './utils/queue';
+import * as Resampler from './utils/resampler';
 
 const BLOCKSIZE = 1024;
 
@@ -35,7 +36,20 @@ export default class SpeechRecorder {
 
     // Has to be run in response to a user gesture
     async init() {
-        const audioCtx = new AudioContext({ sampleRate: this.sampleRate });
+        let audioCtx;
+
+        if (navigator.mediaDevices.getSupportedConstraints().sampleRate) {
+            audioCtx = new AudioContext({ sampleRate: this.sampleRate });
+        } else {
+            // Firefox doesn't support sampleRate constraint for media
+            // stream so we have to just use the device defaults here
+            audioCtx = new AudioContext();
+
+            this.resampler = new Resampler(
+                audioCtx.sampleRate, this.sampleRate, 1, BLOCKSIZE
+            );
+        }
+
         let stream;
 
         try {
@@ -53,7 +67,15 @@ export default class SpeechRecorder {
         );
 
         recorder.onaudioprocess = (event) => {
-            this._processAudio(event.inputBuffer.getChannelData(0));
+            let buf = event.inputBuffer.getChannelData(0);
+
+            // Resample if sample rate doesn't match i.e. we're in
+            // Firefox and the browser can't resample for us
+            if (audioCtx.sampleRate !== this.sampleRate) {
+                buf = this.resampler.resample(buf);
+            }
+
+            this._processAudio(buf);
         };
 
         // Using closures here to capture context variables
