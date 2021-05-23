@@ -7,8 +7,8 @@ export default class Vibrator {
         this.queue = new Queue();
         this.vibrationLevel = 0.0;
         this.maxStrength = maxStrength;
-        this.timeout1 = 0;
-        this.timeout2 = 0;
+        this.timeoutOn = 0;
+        this.timeoutOff = 0;
         this.connector = null;
         this.client = null;
     }
@@ -93,8 +93,8 @@ export default class Vibrator {
 
     async pause() {
         // Clear timeouts
-        clearTimeout(this.timeout1);
-        clearTimeout(this.timeout2);
+        clearTimeout(this.timeoutOn);
+        clearTimeout(this.timeoutOff);
 
         // Empty queue
         this.queue = new Queue();
@@ -125,18 +125,18 @@ export default class Vibrator {
         await this._safeVibrate(strength);
 
         if (offMs > 0) {
-            this.timeout1 = setTimeout(async () => {
+            this.timeoutOn = setTimeout(async () => {
                 await this._restoreBackgroundLevel();
             }, onMs);
 
-            this.timeout2 = setTimeout(async () => {
+            this.timeoutOff = setTimeout(async () => {
                 this.queue.dequeue();
                 if (!this.queue.empty()) {
                     await this._runNextInQueue();
                 }
             }, onMs + offMs);
         } else {
-            this.timeout1 = setTimeout(async () => {
+            this.timeoutOn = setTimeout(async () => {
                 this.queue.dequeue();
                 if (!this.queue.empty()) {
                     await this._runNextInQueue();
