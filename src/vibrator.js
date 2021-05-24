@@ -3,7 +3,6 @@ import { Queue } from './utils/queue';
 export default class Vibrator {
     constructor(appName, maxStrength = 1.0) {
         this.appName = appName;
-        this.device = null;
         this.queue = new Queue();
         this.vibrationLevel = 0.0;
         this.maxStrength = maxStrength;
@@ -71,7 +70,7 @@ export default class Vibrator {
 
     async _safeVibrate(strength) {
         const scaledStrength = Math.min(this.maxStrength, strength);
-        await this.device.vibrate(scaledStrength);
+        await this.client.Devices[0].vibrate(scaledStrength);
     }
 
     busy() {
@@ -88,7 +87,7 @@ export default class Vibrator {
     }
 
     async stop() {
-        await this.device.stop();
+        await this.client.Devices[0].stop();
     }
 
     async pause() {
@@ -99,8 +98,11 @@ export default class Vibrator {
         // Empty queue
         this.queue = new Queue();
 
-        // Stop vibrator
-        await this.stop();
+        // Pause vibrator but only if we have one, this allows pausing
+        // e.g. if device was disconnected
+        if (this.client.Devices.length > 0) {
+            await this.stop();
+        }
     }
 
     async resume() {
