@@ -1,18 +1,40 @@
 import { Queue } from './utils/queue';
+import { EventEmitter } from 'events';
 
-export default class Vibrator {
+const VIBRATE_TIMEOUT_MS = 1000;
+
+export default class Vibrator extends EventEmitter {
     constructor(appName, maxStrength = 1.0) {
+        super();
+
         this.appName = appName;
         this.queue = new Queue();
         this.vibrationLevel = 0.0;
         this.maxStrength = maxStrength;
         this.timeoutOn = 0;
         this.timeoutOff = 0;
+
         this.connector = null;
         this.client = null;
+
+        this.connected = false;
     }
 
-    async _initButtplugWebBluetooth() {
+    // Propagate events upwards
+    addEventListeners() {
+        this.client.addListener('deviceadded', (device) => {
+            if (this.client._isScanning) {
+                this.client.stopScanning();
+            }
+            this.emit('deviceadded', device.Name);
+        });
+
+        this.client.addListener('deviceremoved', () => {
+            this.emit('deviceremoved');
+        });
+    }
+
+    async _connectButtplugWebBluetooth() {
         await Buttplug.buttplugInit();
 
         this.connector = new Buttplug.ButtplugEmbeddedConnectorOptions();
@@ -23,9 +45,12 @@ export default class Vibrator {
         } catch (err) {
             throw err;
         }
+
+        this.connected = true;
+        this.addEventListeners();
     }
 
-    async _initButtplugIntifaceDesktop(address) {
+    async _connectButtplugIntiface(address) {
         await Buttplug.buttplugInit();
 
         this.connector = new Buttplug.ButtplugWebsocketConnectorOptions();
@@ -38,39 +63,41 @@ export default class Vibrator {
         } catch (err) {
             throw err;
         }
-    }
 
-    async findToysWebBluetooth() {
-        await this._initButtplugWebBluetooth();
-        return this.findToys();
-    }
-
-    async findToysIntifaceDesktop(address) {
-        await this._initButtplugIntifaceDesktop(address);
-        return this.findToys();
+        this.connected = true;
+        this.addEventListeners();
     }
 
     // Must be run in response to user gesture
-    async findToys() {
-        return new Promise(async (resolve) => {
-            this.client.addListener("deviceremoved", (device) => {
-                this.device = null;
-            });
+    async scanDevicesWebBluetooth() {
+        if (!this.connected) {
+            await this._connectButtplugWebBluetooth();
+        }
+        await this.client.startScanning();
+    }
 
-            this.client.addListener("deviceadded", (device) => {
-                this.client.stopScanning();
-
-                this.device = device;
-                resolve(device.Name);
-            });
-
-            await this.client.startScanning();
-        });
+    async scanDevicesIntiface(address) {
+        if (!this.connected) {
+            await this._connectButtplugIntiface(address);
+        }
+        await this.client.startScanning();
     }
 
     async _safeVibrate(strength) {
         const scaledStrength = Math.min(this.maxStrength, strength);
-        await this.client.Devices[0].vibrate(scaledStrength);
+
+        let vibratePromise = this.client.Devices[0].vibrate(scaledStrength);
+        let timeoutPromise = new Promise((resolve, reject) => {
+            setTimeout(reject, VIBRATE_TIMEOUT_MS);
+        });
+
+        return Promise.race([vibratePromise, timeoutPromise]).catch((err) => {
+            if (this.connected) {
+                this.connected = false;
+                this.client.disconnect();
+                this.emit('deviceremoved');
+            }
+        });
     }
 
     busy() {
@@ -100,7 +127,7 @@ export default class Vibrator {
 
         // Pause vibrator but only if we have one, this allows pausing
         // e.g. if device was disconnected
-        if (this.client.Devices.length > 0) {
+        if (this.connected && this.client.Devices.length > 0) {
             await this.stop();
         }
     }

@@ -284,7 +284,6 @@ input[type=range]:focus::-webkit-slider-runnable-track {
 }
 
 .error {
-    display: none;
     margin-top: 10px;
     margin-bottom: 10px;
     padding: 10px;
@@ -318,4 +317,20 @@ input[type=range]:focus::-webkit-slider-runnable-track {
     border-style: solid;
     border-radius: 5px;
     border-color: var(--accent-light);
+}
+
+.wrapper-reconnect {
+    display: none;
+}
+
+#err-connect {
+    display: none;
+}
+
+#err-listen {
+    display: none;
+}
+
+#intiface-scanning-info {
+    display: none;
 }

@@ -3,6 +3,7 @@ import Vibrator from './vibrator';
 import mfcc from './mfcc';
 import { patterns } from './patterns';
 import { getRandomInt, getRandomChoice } from './utils/random';
+import { EventEmitter } from 'events';
 
 import * as tf from '@tensorflow/tfjs'
 
@@ -26,8 +27,10 @@ const CHANNELS = 1;
 const N_FFT = 2048;
 const N_MFCC = 40;
 
-export default class PonyTrainer {
+export default class PonyTrainer extends EventEmitter {
     constructor() {
+        super();
+
         this.recorder = new SpeechRecorder({
             sampleRate: SAMPLERATE,
             channels: CHANNELS,
@@ -38,6 +41,15 @@ export default class PonyTrainer {
 
         this.vibrator = new Vibrator('Pony Trainer');
 
+        this.vibrator.on('deviceadded', (deviceName) => {
+            this.emit('deviceadded', deviceName);
+        });
+
+        this.vibrator.on('deviceremoved', () => {
+            this.emit('deviceremoved');
+        });
+
+        this.model = null;
         this.predicting = false;
         this.ticksToDenial = this._rollTicksToDenial();
         this.neighsToResume = 0;
@@ -46,12 +58,12 @@ export default class PonyTrainer {
         this.maxBackgroundStrength = MAX_BACKGROUND_STRENGTH;
     }
 
-    findToysWebBluetooth() {
-        return this.vibrator.findToysWebBluetooth();
+    async findToyWebBluetooth() {
+        await this.vibrator.scanDevicesWebBluetooth();
     }
 
-    findToysIntifaceDesktop(address) {
-        return this.vibrator.findToysIntifaceDesktop(address);
+    async findToyIntiface(address) {
+        await this.vibrator.scanDevicesIntiface(address);
     }
 
     startListening() {
@@ -62,17 +74,17 @@ export default class PonyTrainer {
         this.recorder.stop();
     }
 
-    start() {
-        tf.loadLayersModel('./assets/model.json').then(async (layersModel) => {
-            // Warm up model by giving it an empty input tensor
-            layersModel.predict(tf.zeros([1, 40, 32, 1]));
-            this.model = layersModel;
-
-            await this.resume();
-        });
+    async loadModel() {
+        this.model = await tf.loadLayersModel('./assets/model.json');
+        // Warm up model by giving it an empty input tensor
+        this.model.predict(tf.zeros([1, 40, 32, 1]));        
     }
 
-    async resume() {
+    async play() {
+        if (this.model === null) {
+            await this.loadModel();
+        }
+
         this.predicting = true;
         this.ticker = setInterval(this._tick.bind(this), TICKRATE);
 
@@ -151,9 +163,7 @@ export default class PonyTrainer {
     }
 
     async _rewardPony() {
-        if (this.onRewardPony !== undefined) {
-            this.onRewardPony();
-        }
+        this.emit('rewardpony');
 
         this.neighCount += 1;
 

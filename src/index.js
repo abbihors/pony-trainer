@@ -6,7 +6,9 @@ const COLOR_PROGRESSBAR_DISABLED = '#bebebe';
 
 let ponyTrainer = new PonyTrainer();
 
-ponyTrainer.onRewardPony = explodePonies;
+ponyTrainer.on('deviceadded', deviceAdded);
+ponyTrainer.on('deviceremoved', deviceRemoved);
+ponyTrainer.on('rewardpony', rewardPony);
 
 const SLOPE_FACTOR = -4;
 
@@ -19,6 +21,10 @@ const listenError = document.querySelector('#err-listen');
 const intifaceConnectWrapper = document.querySelector('.wrapper-intiface');
 const intifaceConnectButton = document.querySelector('#btn-intiface-connect');
 const intifaceConnectError = document.querySelector('#intiface-connect-err');
+const intifaceScanningInfo = document.querySelector('#intiface-scanning-info');
+
+const reconnectWrapper = document.querySelector('.wrapper-reconnect');
+const reconnectButton = document.querySelector('#btn-reconnect');
 
 listenButton.onclick = () => {
     ponyTrainer.startListening().then(() => {
@@ -51,22 +57,24 @@ slider.oninput = (e) => {
     recordVol.style.transform = `translateX(${newValue}px)`;
 }
 
-connectButton.onclick = () => {
+connectButton.onclick = connectVibrator;
+reconnectButton.onclick = connectVibrator;
+
+async function connectVibrator() {
     // Unhide device list
     const deviceList = document.querySelector('.wrapper-device-list');
     deviceList.style.display = 'inline';
 
-    // Use Web Bluetooth if it's available, bring up the Intiface
-    // connect UI if the user is missing an adapter or doesn't have Web
-    // Bluetooth
-    navigator.bluetooth.getAvailability().then((available) => {
-        if (available) {
-            ponyTrainer.findToysWebBluetooth().then((deviceName) => {
-                deviceAdded(deviceName);
-                ponyTrainer.start();
-            });
+    const connectError = document.querySelector('#err-connect');
 
-            intifaceConnectWrapper.style.display = 'none';
+    // Try Web Bluetooth first, fallback to Intiface
+    navigator.bluetooth.getAvailability().then((adapterAvailable) => {
+        if (adapterAvailable) {
+            ponyTrainer.findToyWebBluetooth().then(() => {
+                connectError.style.display = 'none';
+            }).catch((err) => {
+                connectError.style.display = 'block';
+            });
         } else {
             intifaceConnectWrapper.style.display = 'block';
         }
@@ -75,37 +83,71 @@ connectButton.onclick = () => {
     });
 }
 
-intifaceConnectButton.onclick = () => {
+intifaceConnectButton.onclick = async () => {
     const address = document.querySelector('#intiface-addr').value;
 
-    ponyTrainer.findToysIntifaceDesktop(address).then((deviceName) => {
-        deviceAdded(deviceName);
-        ponyTrainer.start();
+    intifaceScanningInfo.style.display = 'block';
 
-        intifaceConnectWrapper.style.display = 'none';
+    ponyTrainer.findToyIntiface(address).then(() => {
         intifaceConnectError.style.display = 'none';
     }).catch((err) => {
         intifaceConnectError.style.display = 'block';
+        intifaceScanningInfo.style.display = 'none';
     });
 }
 
-function deviceAdded(deviceName) {
+async function deviceAdded(deviceName) {
     playPauseButton.style.visibility = 'visible';
 
-    const results = document.querySelector('.wrapper-device-list');
+    connectButton.style.display = 'none';
+    intifaceConnectWrapper.style.display = 'none';
+    reconnectWrapper.style.display = 'none';
+    intifaceScanningInfo.style.display = 'none';
+    intifaceConnectWrapper.style.display = 'none';
+
+    addDeviceListEntry(deviceName);
+
+    await ponyTrainer.play();
+}
+
+async function deviceRemoved() {
+    await ponyTrainer.pause();
+
+    removeDeviceListEntry();
+
+    playPauseButton.style.visibility = 'hidden';
+    reconnectWrapper.style.display = 'block';
+}
+
+function addDeviceListEntry(deviceName) {
+    const deviceList = document.querySelector('.wrapper-device-list');
+
+    let deviceEntry = document.createElement('div');
     let deviceLine = document.createElement('p');
     let testButton = document.createElement('button');
-
-    testButton.onclick = async () => {
-        await ponyTrainer.testVibrate();
-    }
 
     deviceLine.innerText = `▸ ${deviceName}`;
     testButton.className = 'button-small';
     testButton.innerText = 'Test vibration';
 
-    results.append(deviceLine);
-    results.append(testButton);
+    testButton.onclick = async () => {
+        await ponyTrainer.testVibrate();
+    }
+
+    deviceEntry.class = 'device-entry';
+    deviceEntry.append(deviceLine);
+    deviceEntry.append(testButton);
+
+    deviceList.append(deviceEntry);
+}
+
+function removeDeviceListEntry() {
+    const deviceList = document.querySelector('.wrapper-device-list');
+
+    let devices = deviceList.childNodes;
+    if (devices.length > 0) {
+        deviceList.removeChild(devices[0]);
+    }
 }
 
 let volumeMeterLevel = 0;
@@ -177,6 +219,10 @@ function updateProgressBar() {
 
 setInterval(updateProgressBar, 200);
 
+function rewardPony() {
+    explodePonies();
+}
+
 function explodePonies() {
     const numPonies = getRandomInt(10, 16);
     const numHearts = getRandomInt(3, 6);
@@ -243,7 +289,7 @@ playPauseButton.onclick = () => {
         ponyTrainer.pause();
         playPauseButton.innerHTML = 'Resume';
     } else {
-        ponyTrainer.resume();
+        ponyTrainer.play();
         playPauseButton.innerHTML = 'Pause';
     }
 
