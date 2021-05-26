@@ -60,27 +60,27 @@ slider.oninput = (e) => {
 connectButton.onclick = connectVibrator;
 reconnectButton.onclick = connectVibrator;
 
+function bluetoothAdapterAvailable() {
+    try {
+        return navigator.bluetooth.getAvailability();
+    } catch {
+        return false;
+    }
+}
+
 async function connectVibrator() {
     // Unhide device list
     const deviceList = document.querySelector('.wrapper-device-list');
     deviceList.style.display = 'inline';
 
-    const connectError = document.querySelector('#err-connect');
-
     // Try Web Bluetooth first, fallback to Intiface
-    navigator.bluetooth.getAvailability().then((adapterAvailable) => {
-        if (adapterAvailable) {
-            ponyTrainer.findToyWebBluetooth().then(() => {
-                connectError.style.display = 'none';
-            }).catch((err) => {
-                connectError.style.display = 'block';
-            });
-        } else {
-            intifaceConnectWrapper.style.display = 'block';
-        }
-    }).catch((err) => {
+    const adapterAvailable = await bluetoothAdapterAvailable();
+
+    if (adapterAvailable) {
+        await ponyTrainer.findToyWebBluetooth();
+    } else {
         intifaceConnectWrapper.style.display = 'block';
-    });
+    }
 }
 
 intifaceConnectButton.onclick = async () => {
