@@ -86,14 +86,14 @@ async function connectVibrator() {
 intifaceConnectButton.onclick = async () => {
     const address = document.querySelector('#intiface-addr').value;
 
-    intifaceScanningInfo.style.display = 'block';
-
-    ponyTrainer.findToyIntiface(address).then(() => {
+    try {
+        await ponyTrainer.findToyIntiface(address);
+        intifaceScanningInfo.style.display = 'block';
         intifaceConnectError.style.display = 'none';
-    }).catch((err) => {
-        intifaceConnectError.style.display = 'block';
+    } catch {
         intifaceScanningInfo.style.display = 'none';
-    });
+        intifaceConnectError.style.display = 'block';
+    }
 }
 
 async function deviceAdded(deviceName) {
