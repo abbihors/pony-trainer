@@ -73,11 +73,18 @@ async function connectVibrator() {
     const deviceList = document.querySelector('.wrapper-device-list');
     deviceList.style.display = 'inline';
 
+    const connectError = document.querySelector('#err-connect');
+
     // Try Web Bluetooth first, fallback to Intiface
     const adapterAvailable = await bluetoothAdapterAvailable();
 
     if (adapterAvailable) {
-        await ponyTrainer.findToyWebBluetooth();
+        try {
+            await ponyTrainer.findToyWebBluetooth();
+            connectError.style.display = 'none';
+        } catch {
+            connectError.style.display = 'block';
+        }
     } else {
         intifaceConnectWrapper.style.display = 'block';
     }
