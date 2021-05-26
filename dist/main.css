@@ -5,6 +5,7 @@
     --accent-dark: #00a367;
     --accent-dark2: #0b5e16;
     --accent-light: #a7e099;
+    --accent-negative: white;
     --divider: #e1f1dd;
     --shadow: #b9b9b9;
     --error: #ffb7b7;
@@ -78,7 +79,7 @@ a:hover {
 button {
     font-size: 15px;
     font-family: 'Open Sans', sans-serif;
-    color: white;
+    color: var(--accent-negative);
     background-color: var(--accent);
     padding-top: 6px;
     padding-bottom: 6px;
@@ -153,7 +154,7 @@ button:hover {
     border-radius: 10px;
     overflow: hidden;
     position: relative;
-    background-color: white;
+    background-color: var(--background-color);
     transition: filter ease-out 300ms;
 }
 
