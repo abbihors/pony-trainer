@@ -5,3 +5,6 @@ node_modules
 dist/*.js
 dist/*.txt
 dist/assets
+
+# Local Netlify folder
+.netlify
