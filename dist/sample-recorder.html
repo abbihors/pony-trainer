@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset='utf-8'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <title>Sample Recorder</title>
+    <meta name='viewport' content='width=device-width, initial-scale=1'>
+    <link rel='stylesheet' type='text/css' media='screen' href='main.css'>
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div class='wrapper'>
+        <div class='readme'>
+            <h1>Sample Recorder</h1>
+
+            <p>This is the sample recorder for <a href='index.html'>Pony Trainer</a>, you can use it to record samples and save them to a zip for use in improving the model.</p>
+        </div>
+
+        <div class='app'>
+            <div class='wrapper-button'>
+                <button id='btn-listen'>Start listening</button>
+            </div>
+
+            <div id='err-listen' class='error'>Error: Couldn't open microphone. You need to allow Pony Trainer to use your microphone to use this app.</div>
+
+            <div class='wrapper-listen'>
+                <h3>Start listening</h3>
+                <p>Speak into your microphone and use the slider to adjust the voice activation threshold. Try to get it so that it only glows green when you speak.</p>
+
+                <input type='range' id='threshold' min='0' max='1' step='0.005'>
+
+                <div class='voicemeter-wrapper'>
+                    <div class='voicemeter-recordvol'></div>
+                    <div class='voicemeter'></div>
+                </div>
+
+                <div>
+                    <br>
+                    <span>Recorded samples: </span>
+                    <span id='sample-count'>0</span>
+                </div>
+    
+            </div>
+
+            <div class='wrapper-button'>
+                <button id='btn-dl'>Download ZIP</button>
+            </div>
+
+        </div>
+
+        <div class='footer'>
+            <p>Copyright © 2021 — Source code available on <a>GitHub</a>, follow <a href='https://twitter.com/abbihors'>@abbihors</a> on Twitter for updates</p>
+        </div>
+    </div>
+
+    <script lang="javascript" src="https://cdn.jsdelivr.net/npm/buttplug@1.0.14/dist/web/buttplug.min.js"></script>
+    <script src='recorder.js'></script>
+</body>
+
+</html>

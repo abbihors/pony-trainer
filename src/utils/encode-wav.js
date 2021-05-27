@@ -1,5 +1,5 @@
 // See: http://soundfile.sapp.org/doc/WaveFormat/
-export function encodeWavInt16(samples, sampleRate, numChannels) {
+export default function encodeWavInt16(samples, sampleRate, numChannels) {
     const byteWidth = 2; // Let's just do int16 for now
     const dataSize = samples.length * numChannels * byteWidth;
     
