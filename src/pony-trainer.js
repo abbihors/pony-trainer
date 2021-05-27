@@ -39,7 +39,7 @@ export default class PonyTrainer extends EventEmitter {
             prevAudioS: PREV_AUDIO_S
         }, this._processSpeech.bind(this));
 
-        this.vibrator = new Vibrator('Pony Trainer');
+        this.vibrator = new Vibrator('Pony Trainer', 1.0, 0.8);
 
         this.vibrator.on('deviceadded', async (deviceName) => {
             this.emit('deviceadded', deviceName);

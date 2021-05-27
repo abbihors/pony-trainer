@@ -4,15 +4,18 @@ import { EventEmitter } from 'events';
 const VIBRATE_TIMEOUT_MS = 1000;
 
 export default class Vibrator extends EventEmitter {
-    constructor(appName, maxStrength = 1.0) {
+    constructor(appName, maxStrength = 1.0, scalingFactor = 1.0) {
         super();
 
         this.appName = appName;
         this.queue = new Queue();
         this.vibrationLevel = 0.0;
-        this.maxStrength = maxStrength;
         this.timeoutOn = 0;
         this.timeoutOff = 0;
+
+        // Safety features
+        this.maxStrength = maxStrength;
+        this.scalingFactor = scalingFactor;
 
         this.connector = null;
         this.client = null;
@@ -83,10 +86,9 @@ export default class Vibrator extends EventEmitter {
         await this.client.startScanning();
     }
 
-    async _safeVibrate(strength) {
-        const scaledStrength = Math.min(this.maxStrength, strength);
+    async _vibrateTimeout(strength) {
+        let vibratePromise = this.client.Devices[0].vibrate(strength);
 
-        let vibratePromise = this.client.Devices[0].vibrate(scaledStrength);
         let timeoutPromise = new Promise((resolve, reject) => {
             setTimeout(reject, VIBRATE_TIMEOUT_MS);
         });
@@ -100,17 +102,28 @@ export default class Vibrator extends EventEmitter {
         });
     }
 
+    async _safeVibrate(strength) {
+        let scaledStrength = 0;
+
+        if (strength > 0) {
+            scaledStrength = Math.max(0.05, strength * this.scalingFactor);
+            scaledStrength = Math.min(this.maxStrength, scaledStrength);
+        }
+        
+        await this._vibrateTimeout(scaledStrength);
+    }
+
     busy() {
         return !this.queue.empty();
     }
 
     async setVibrationLevel(newLevel) {
         this.vibrationLevel = newLevel;
-        await this._safeVibrate(newLevel);
+        await this._vibrateTimeout(newLevel);
     }
 
     async _restoreBackgroundLevel() {
-        await this._safeVibrate(this.vibrationLevel);
+        await this._vibrateTimeout(this.vibrationLevel);
     }
 
     async stop() {
