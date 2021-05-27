@@ -41,11 +41,13 @@ export default class PonyTrainer extends EventEmitter {
 
         this.vibrator = new Vibrator('Pony Trainer');
 
-        this.vibrator.on('deviceadded', (deviceName) => {
+        this.vibrator.on('deviceadded', async (deviceName) => {
             this.emit('deviceadded', deviceName);
+            // Do a little vibration to confirm device was connected
+            await this.vibrator.vibrate(0.2, 500, 0);
         });
 
-        this.vibrator.on('deviceremoved', () => {
+        this.vibrator.on('deviceremoved', async () => {
             this.emit('deviceremoved');
         });
 
