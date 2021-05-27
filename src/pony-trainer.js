@@ -196,14 +196,14 @@ export default class PonyTrainer extends EventEmitter {
     async runWeightedRandomPattern() {
         let raffle = [];
 
-        for (const [patternName, pattern] of Object.entries(patterns)) {
+        for (const [patternName, pattern] of Object.entries(patterns())) {
             for (let i = 0; i < pattern.weight; i++) {
                 raffle.push(patternName);
             }
         }
 
         const winnerName = getRandomChoice(raffle);
-        const winner = patterns[winnerName];
+        const winner = patterns()[winnerName];
 
         await this.runPattern(winner);
     }
