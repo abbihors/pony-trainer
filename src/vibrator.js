@@ -110,6 +110,7 @@ export default class Vibrator extends EventEmitter {
             scaledStrength = Math.min(this.maxStrength, scaledStrength);
         }
         
+        console.log(`vibrating at: ${scaledStrength}`);
         await this._vibrateTimeout(scaledStrength);
     }
 

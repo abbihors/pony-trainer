@@ -8,15 +8,15 @@ import { EventEmitter } from 'events';
 import * as tf from '@tensorflow/tfjs'
 
 const TICKRATE = 200;
-const DENIAL_LOWER_MS = 20_000;
-const DENIAL_UPPER_MS = 60_000;
+const DENIAL_LOWER_MS = 40_000;
+const DENIAL_UPPER_MS = 80_000;
 const FULL_DECAY_MS = 200_000; // Time to decay from 1 to 0
 
 const MIN_DENIAL_NEIGHS = 2;
 const MAX_DENIAL_NEIGHS = 5;
 
-const MAX_BACKGROUND_STRENGTH = 0.3;
-const REWARD_STRENGTH = 0.05;
+const MAX_BACKGROUND_STRENGTH = 0.2;
+const REWARD_STRENGTH = 0.03;
 
 const RECORD_VOL = 0.04;
 const MAX_SILENCE_S = 0.8; // This + prevAudioS define min recording length
@@ -39,7 +39,7 @@ export default class PonyTrainer extends EventEmitter {
             prevAudioS: PREV_AUDIO_S
         }, this._processSpeech.bind(this));
 
-        this.vibrator = new Vibrator('Pony Trainer', 1.0, 0.8);
+        this.vibrator = new Vibrator('Pony Trainer', 1.0, 0.6);
 
         this.vibrator.on('deviceadded', async (deviceName) => {
             this.emit('deviceadded', deviceName);
