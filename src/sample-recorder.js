@@ -57,7 +57,9 @@ listenButton.onclick = () => {
 }
 
 downloadButton.onclick = () => {
-    zip.generateAsync({ type: 'blob' }).then(saveBlob);
+    if (sampleCount > 0) {
+        zip.generateAsync({ type: 'blob' }).then(saveBlob);
+    }
 }
 
 // Hacky way to download a blob
@@ -80,7 +82,7 @@ slider.oninput = (e) => {
 
     let recordVol = document.querySelector('.voicemeter-recordvol');
 
-    ponyTrainer.recorder.recordVol = islope(e.target.value, SLOPE_FACTOR);
+    recorder.recordVol = islope(e.target.value, SLOPE_FACTOR);
 
     recordVol.style.transform = `translateX(${newValue}px)`;
 }
