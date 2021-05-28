@@ -5,7 +5,8 @@ import { patterns } from './patterns';
 import { getRandomInt, getRandomChoice } from './utils/random';
 import { EventEmitter } from 'events';
 
-import * as tf from '@tensorflow/tfjs'
+import { zeros, tensor2d } from '@tensorflow/tfjs';
+import { loadLayersModel } from '@tensorflow/tfjs-layers';
 
 const TICKRATE = 200;
 const DENIAL_LOWER_MS = 40_000;
@@ -81,9 +82,9 @@ export default class PonyTrainer extends EventEmitter {
     }
 
     async loadModel() {
-        this.model = await tf.loadLayersModel('./assets/model.json');
+        this.model = await loadLayersModel('./assets/model.json');
         // Warm up model by giving it an empty input tensor
-        this.model.predict(tf.zeros([1, 40, 32, 1]));        
+        this.model.predict(zeros([1, 40, 32, 1]));
     }
 
     async play() {
@@ -214,7 +215,7 @@ export default class PonyTrainer extends EventEmitter {
 }
 
 function predict(model, mfccs) {
-    let tensor = tf.tensor2d(mfccs, [40, 32], "float32");
+    let tensor = tensor2d(mfccs, [40, 32], "float32");
     tensor = tensor.reshape([1, 40, 32, 1]);
 
     if (model.predict(tensor).arraySync() > 0.5) {

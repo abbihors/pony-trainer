@@ -1,0 +1,21 @@
+{
+    "kernels": [
+        "Slice",
+        "FusedConv2D",
+        "fusedConv2d__op",
+        "MaxPool",
+        "Identity",
+        "Mean",
+        "Reshape",
+        "_FusedMatMul",
+        "fusedMatMul__op",
+        "Add",
+        "Sigmoid"
+    ],
+    "backends": [
+        "cpu",
+        "webgl"
+    ],
+    "outputPath": "./src/custom_tfjs",
+    "forwardModeOnly": true
+}
