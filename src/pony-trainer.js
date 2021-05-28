@@ -52,7 +52,7 @@ export default class PonyTrainer extends EventEmitter {
         });
 
         this.model = null;
-        this.predicting = false;
+        this.playing = false;
         this.ticksToDenial = this._rollTicksToDenial();
         this.neighsToResume = 0;
         this.neighCount = 0;
@@ -68,7 +68,11 @@ export default class PonyTrainer extends EventEmitter {
         await this.vibrator.scanDevicesIntiface(address);
     }
 
-    startListening() {
+    async startListening() {
+        if (this.model === null) {
+            await this.loadModel();
+        }
+
         return this.recorder.start();
     }
 
@@ -83,11 +87,7 @@ export default class PonyTrainer extends EventEmitter {
     }
 
     async play() {
-        if (this.model === null) {
-            await this.loadModel();
-        }
-
-        this.predicting = true;
+        this.playing = true;
         this.ticker = setInterval(this._tick.bind(this), TICKRATE);
 
         if (!this.denied) {
@@ -96,7 +96,7 @@ export default class PonyTrainer extends EventEmitter {
     }
 
     async pause() {
-        this.predicting = false;
+        this.playing = false;
         clearInterval(this.ticker);
 
         await this.vibrator.pause();
@@ -144,15 +144,15 @@ export default class PonyTrainer extends EventEmitter {
     }
 
     async _processSpeech(recording) {
-        if (!this.predicting) return;
-
         recording = trim(recording, SAMPLERATE, true);
 
         const mfccs = mfcc(recording, SAMPLERATE, N_FFT, N_MFCC);
         const prediction = predict(this.model, mfccs);
 
-        if (prediction === "animal") {
-            if (!this.vibrator.busy()) {
+        if (prediction === 'animal') {
+            this.emit('rewardpony');
+
+            if (this.playing && !this.vibrator.busy()) {
                 await this._rewardPony();
             }
         }
@@ -165,8 +165,6 @@ export default class PonyTrainer extends EventEmitter {
     }
 
     async _rewardPony() {
-        this.emit('rewardpony');
-
         this.neighCount += 1;
 
         if (!this.denied) {
