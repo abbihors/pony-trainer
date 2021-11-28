@@ -1,7 +1,7 @@
 import SpeechRecorder from './speech-recorder';
 import Vibrator from './vibrator';
 import mfcc from './mfcc';
-import { patterns } from './patterns';
+import { getPatterns } from './patterns';
 import { getRandomInt, getRandomChoice } from './utils/random';
 import { EventEmitter } from 'events';
 
@@ -194,15 +194,16 @@ export default class PonyTrainer extends EventEmitter {
 
     async runWeightedRandomPattern() {
         let raffle = [];
+        let patterns = getPatterns();
 
-        for (const [patternName, pattern] of Object.entries(patterns())) {
+        for (const [patternName, pattern] of Object.entries(patterns)) {
             for (let i = 0; i < pattern.weight; i++) {
                 raffle.push(patternName);
             }
         }
 
         const winnerName = getRandomChoice(raffle);
-        const winner = patterns()[winnerName];
+        const winner = patterns[winnerName];
 
         await this.runPattern(winner);
     }

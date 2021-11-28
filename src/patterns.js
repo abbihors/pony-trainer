@@ -1,7 +1,8 @@
 import { getRandom } from './utils/random';
 
 // Patterns are in the form: [strength, onMs, offMs]
-export const patterns = function () {
+// this needs to be a function to allow random numbers to work
+export const getPatterns = function () {
     return {
         "Basic": {
             weight: 9,
