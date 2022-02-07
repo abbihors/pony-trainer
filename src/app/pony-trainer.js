@@ -82,7 +82,7 @@ export default class PonyTrainer extends EventEmitter {
     }
 
     async loadModel() {
-        this.model = await loadLayersModel('./assets/model.json');
+        this.model = await loadLayersModel('./assets/model-horse/model.json');
         // Warm up model by giving it an empty input tensor
         this.model.predict(zeros([1, 40, 32, 1]));
     }

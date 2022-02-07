@@ -2,9 +2,8 @@ node_modules
 .vscode
 .DS_Store
 *.wav
-dist/*.js
-dist/*.txt
-dist/assets
+dist
+dist/*
 
 # Local Netlify folder
 .netlify

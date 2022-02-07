@@ -1,12 +1,12 @@
 const path = require('path');
-const webpack = require('webpack')
 const CopyPlugin = require('copy-webpack-plugin');
+const webpack = require('webpack')
 
 module.exports = {
     mode: 'development',
     entry: {
-        main: './src/index.js',
-        recorder: './src/sample-recorder.js',
+        main: './src/app/index.js',
+        recorder: './src/app/sample-recorder.js',
     },
     output: {
         filename: '[name].js',
@@ -24,6 +24,10 @@ module.exports = {
         new CopyPlugin({
             patterns: [
                 { from: 'src/assets', to: 'assets' },
+                { from: 'src/index.html', to: '.' },
+                { from: 'src/sample-recorder.html', to: '.' },
+                { from: 'src/styles.css', to: '.' },
+                { from: 'src/favicon.ico', to: '.' },
             ],
         }),
     ],
