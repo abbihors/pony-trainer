@@ -275,8 +275,14 @@ input[type=range]:focus::-webkit-slider-runnable-track {
     margin: 0px;
 }
 
+#lockmessage {
+    transform: translate(0, 50px);
+    text-align: center;
+    visibility: hidden;
+}
+
 #btn-play-pause {
-    transform: translate(0, 220px);
+    transform: translate(0, 178px);
     visibility: hidden;
 }
 

@@ -209,14 +209,17 @@ function updateProgressBar() {
     }
 
     let icon = document.querySelector('.progressbar-icon');
+    let lockmessage = document.querySelector('#lockmessage');
 
     // Only update if we need to update
     if (ponyTrainer.denied !== denied) {
         if (ponyTrainer.denied) {
             icon.style.visibility = 'visible';
+            lockmessage.style.visibility = 'visible';
             progressBar.style.backgroundColor = COLOR_PROGRESSBAR_DISABLED;
         } else {
             icon.style.visibility = 'hidden';
+            lockmessage.style.visibility = 'hidden';
             progressBar.style.backgroundColor = COLOR_ACCENT;
         }
 
