@@ -112,6 +112,8 @@ button:hover {
     border-radius: 30px;
     overflow: hidden;
     margin: 0px;
+    background-color: var(--background-color);
+    transition: filter ease-out 300ms;
 }
 
 .progressbar {

@@ -229,8 +229,15 @@ function updateProgressBar() {
 
 setInterval(updateProgressBar, 200);
 
+let progressbarWrapper = document.querySelector('.progressbar-wrapper');
+
 function rewardPony() {
     explodePonies();
+
+    progressbarWrapper.style.filter = 'drop-shadow(0 0 4px #00aa00)';
+    setTimeout(() => {
+        progressbarWrapper.style.filter = '';
+    }, 1100);
 }
 
 function explodePonies() {
