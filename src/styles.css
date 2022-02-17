@@ -10,6 +10,8 @@
     --shadow: #b9b9b9;
     --error: #ffb7b7;
     --info: #f2f2f0;
+    --glow: #00aa00;
+    --inactive: #bebebe;
 }
 
 html, body {
@@ -116,11 +118,19 @@ button:hover {
     transition: filter ease-out 300ms;
 }
 
+.progressbar-wrapper.excited {
+    filter: drop-shadow(0 0 4px var(--glow))
+}
+
 .progressbar {
     width: 0%;
     height: 50px;
-    background: var(--accent);
+    background-color: var(--accent);
     transition: width 500ms;
+}
+
+.progressbar.paused {
+    background-color: var(--inactive);
 }
 
 .progressbar-outline {
@@ -160,17 +170,21 @@ button:hover {
     transition: filter ease-out 300ms;
 }
 
+.voicemeter-wrapper.recording {
+    filter: drop-shadow(0 0 4px var(--glow));
+}
+
 .voicemeter-recordvol {
     width: 4px;
     height: 20px;
-    background: var(--accent-dark2);
+    background-color: var(--accent-dark2);
     position: absolute;
 }
 
 .voicemeter {
     width: 0%;
     height: 100%;
-    background: var(--accent);
+    background-color: var(--accent);
 }
 
 .wrapper-listen {

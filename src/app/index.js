@@ -1,9 +1,6 @@
 import PonyTrainer from './pony-trainer';
 import { getRandom, getRandomInt } from './utils/random';
 
-const COLOR_ACCENT = '#00c27b';
-const COLOR_PROGRESSBAR_DISABLED = '#bebebe';
-
 let ponyTrainer = new PonyTrainer();
 
 ponyTrainer.on('deviceadded', deviceAdded);
@@ -174,12 +171,12 @@ function updateVolumeMeter() {
         meter.style.width = `${newVol}%`;
     }
 
-    let wrapper = document.querySelector('.voicemeter-wrapper');
+    let voicemeterWrapper = document.querySelector('.voicemeter-wrapper');
 
     if (vol > ponyTrainer.recorder.recordVol) {
-        wrapper.style.filter = 'drop-shadow(0 0 4px #00aa00)';
+        voicemeterWrapper.classList.add('recording');
     } else if (!ponyTrainer.recorder.isRecording()) {
-        wrapper.style.filter = '';
+        voicemeterWrapper.classList.remove('recording');
     }
 }
 
@@ -208,19 +205,19 @@ function updateProgressBar() {
         barPercentage = percentage;
     }
 
-    let icon = document.querySelector('.progressbar-icon');
-    let lockmessage = document.querySelector('#lockmessage');
+    let lockIcon = document.querySelector('.progressbar-icon');
+    let lockMessage = document.querySelector('#lockmessage');
 
     // Only update if we need to update
     if (ponyTrainer.denied !== denied) {
         if (ponyTrainer.denied) {
-            icon.style.visibility = 'visible';
-            lockmessage.style.visibility = 'visible';
-            progressBar.style.backgroundColor = COLOR_PROGRESSBAR_DISABLED;
+            lockIcon.style.visibility = 'visible';
+            lockMessage.style.visibility = 'visible';
+            progressBar.classList.add('paused');
         } else {
-            icon.style.visibility = 'hidden';
-            lockmessage.style.visibility = 'hidden';
-            progressBar.style.backgroundColor = COLOR_ACCENT;
+            lockIcon.style.visibility = 'hidden';
+            lockMessage.style.visibility = 'hidden';
+            progressBar.classList.remove('paused');
         }
 
         denied = ponyTrainer.denied;
@@ -229,14 +226,18 @@ function updateProgressBar() {
 
 setInterval(updateProgressBar, 200);
 
-let progressbarWrapper = document.querySelector('.progressbar-wrapper');
-
 function rewardPony() {
     explodePonies();
+    exciteProgressbar();
+}
 
-    progressbarWrapper.style.filter = 'drop-shadow(0 0 4px #00aa00)';
+function exciteProgressbar() {
+    let progressbarWrapper = document.querySelector('.progressbar-wrapper');
+
+    progressbarWrapper.classList.add('excited');
+
     setTimeout(() => {
-        progressbarWrapper.style.filter = '';
+        progressbarWrapper.classList.remove('excited');
     }, 1100);
 }
 
@@ -302,12 +303,16 @@ function createExplodingEmoji(text) {
 let paused = false;
 
 playPauseButton.onclick = () => {
+    let progressBar = document.querySelector('.progressbar');
+
     if (!paused) {
         ponyTrainer.pause();
         playPauseButton.innerHTML = 'Resume';
+        progressBar.classList.add('paused');
     } else {
         ponyTrainer.play();
         playPauseButton.innerHTML = 'Pause';
+        progressBar.classList.remove('paused');
     }
 
     paused = !paused;
