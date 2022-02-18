@@ -9,19 +9,19 @@ ponyTrainer.on('rewardpony', rewardPony);
 
 const SLOPE_FACTOR = -4;
 
-const listenButton = document.querySelector('#btn-listen');
-const connectButton = document.querySelector('#btn-connect');
-const playPauseButton = document.querySelector('#btn-play-pause');
+const listenButton = document.querySelector('.btn-listen');
+const connectButton = document.querySelector('.btn-connect');
+const playPauseButton = document.querySelector('.btn-play-pause');
 
-const listenError = document.querySelector('#err-listen');
+const listenError = document.querySelector('.err-listen');
 
 const intifaceConnectWrapper = document.querySelector('.wrapper-intiface');
-const intifaceConnectButton = document.querySelector('#btn-intiface-connect');
-const intifaceConnectError = document.querySelector('#intiface-connect-err');
-const intifaceScanningInfo = document.querySelector('#intiface-scanning-info');
+const intifaceConnectButton = document.querySelector('.btn-intiface-connect');
+const intifaceConnectError = document.querySelector('.intiface-connect-err');
+const intifaceScanningInfo = document.querySelector('.intiface-scanning-info');
 
 const reconnectWrapper = document.querySelector('.wrapper-reconnect');
-const reconnectButton = document.querySelector('#btn-reconnect');
+const reconnectButton = document.querySelector('.btn-reconnect');
 
 listenButton.onclick = () => {
     ponyTrainer.startListening().then(() => {
@@ -38,7 +38,7 @@ listenButton.onclick = () => {
     });
 }
 
-const slider = document.querySelector('#threshold');
+const slider = document.querySelector('.threshold');
 let recordVol = document.querySelector('.voicemeter-recordvol');
 
 recordVol.style.transform = `translateX(${islope(0.5, SLOPE_FACTOR) * 246}px)`;
@@ -70,7 +70,7 @@ async function connectVibrator() {
     const deviceList = document.querySelector('.wrapper-device-list');
     deviceList.style.display = 'inline';
 
-    const connectError = document.querySelector('#err-connect');
+    const connectError = document.querySelector('.err-connect');
 
     // Try Web Bluetooth first, fallback to Intiface
     const adapterAvailable = await bluetoothAdapterAvailable();
@@ -88,7 +88,7 @@ async function connectVibrator() {
 }
 
 intifaceConnectButton.onclick = async () => {
-    const address = document.querySelector('#intiface-addr').value;
+    const address = document.querySelector('.intiface-addr').value;
 
     try {
         await ponyTrainer.findToyIntiface(address);
@@ -205,8 +205,8 @@ function updateProgressBar() {
         barPercentage = percentage;
     }
 
-    let lockIcon = document.querySelector('.progressbar-icon');
-    let lockMessage = document.querySelector('#lockmessage');
+    let lockIcon = document.querySelector('.progressbar-lock-icon');
+    let lockMessage = document.querySelector('.lockmessage');
 
     // Only update if we need to update
     if (ponyTrainer.denied !== denied) {

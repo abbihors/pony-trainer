@@ -54,15 +54,15 @@
 
         <div class='app'>
             <div class='wrapper-button'>
-                <button id='btn-listen'>Start listening</button>
+                <button class='btn-listen'>Start listening</button>
             </div>
 
-            <div id='err-listen' class='error'>Error: Couldn't open microphone. You need to allow Pony Trainer to use your microphone to use this app.</div>
+            <div class='err-listen' class='error'>Error: Couldn't open microphone. You need to allow Pony Trainer to use your microphone to use this app.</div>
 
             <div class='wrapper-listen'>
                 <p>Speak into your microphone and use the slider to adjust the voice activation threshold. Try to get it so that it only glows green when you speak.</p>
 
-                <input type='range' id='threshold' min='0' max='1' step='0.005'>
+                <input type='range' class='threshold' min='0' max='1' step='0.005'>
 
                 <div class='voicemeter-wrapper'>
                     <div class='voicemeter-recordvol'></div>
@@ -71,29 +71,29 @@
             </div>
 
             <div class='wrapper-button'>
-                <button id='btn-connect'>Connect a vibrator</button>
+                <button class='btn-connect'>Connect a vibrator</button>
             </div>
 
-            <div id='err-connect' class='error'>Error: Couldn't connect. Make sure this page has permission to use Bluetooth.</div>
+            <div class='err-connect' class='error'>Error: Couldn't connect. Make sure this page has permission to use Bluetooth.</div>
             
             <div class='wrapper-reconnect'>
                 <div class='error'>Device disconnected</div>
-                <button id='btn-reconnect'>Reconnect</button>
+                <button class='btn-reconnect'>Reconnect</button>
             </div>
             
             <div class='wrapper-intiface'>
                 <div class='info'>Bluetooth is unsupported by your browser. You can still use the app, but you'll have to install and run the <a href='https://intiface.com/desktop/'>Intiface Desktop server</a> to use it. Once it's running, enter the server address below and connect.</div>
-                <input id='intiface-addr' value='127.0.0.1:12345'>
-                <button id='btn-intiface-connect'>Connect</button>
-                <div id='intiface-scanning-info' class='info'>Scanning...</div>
-                <div id='intiface-connect-err' class='error'>Error: Couldn't connect to Intiface Desktop server. Make sure that the server has been started and that the address is correct.</div>
+                <input class='intiface-addr' value='127.0.0.1:12345'>
+                <button class='btn-intiface-connect'>Connect</button>
+                <div class='intiface-scanning-info' class='info'>Scanning...</div>
+                <div class='intiface-connect-err' class='error'>Error: Couldn't connect to Intiface Desktop server. Make sure that the server has been started and that the address is correct.</div>
             </div>
 
             <div class='wrapper-device-list'></div>
             
             <div class='bars'>
                 <div class='progressbar-wrapper'>
-                    <div class='progressbar-icon'>
+                    <div class='progressbar-lock-icon'>
                         <img src='assets/lock.svg'>
                     </div>
                     <div class='progressbar-outline'></div>
@@ -101,10 +101,10 @@
                 </div>
             </div>
 
-            <div id='lockmessage'>Locked!<br />Keep neighing to unlock</div>
+            <div class='lockmessage'>Locked!<br />Keep neighing to unlock</div>
 
             <div class='wrapper-button'>
-                <button id='btn-play-pause'>Pause</button>
+                <button class='btn-play-pause'>Pause</button>
             </div>
         </div>
 
