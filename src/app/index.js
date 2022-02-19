@@ -8,6 +8,8 @@ ponyTrainer.on('deviceremoved', deviceRemoved);
 ponyTrainer.on('rewardpony', rewardPony);
 
 const SLOPE_FACTOR = -4;
+const VOLUME_METER_UPDATE_MS = 50;
+const PROGRESS_BAR_UPDATE_MS = 200;
 
 const listenButton = document.querySelector('.btn-listen');
 const connectButton = document.querySelector('.btn-connect');
@@ -157,30 +159,34 @@ function removeDeviceListEntry() {
 let volumeMeterLevel = 0;
 
 function updateVolumeMeter() {
-    const vol = ponyTrainer.recorder.volume;
+    const currentVol = ponyTrainer.recorder.volume;
 
-    let newVol = slope(vol, SLOPE_FACTOR) * 100;
+    let newVolPercentage = slope(currentVol, SLOPE_FACTOR) * 100;
 
-    if (newVol < 1) {
-        newVol = 0;
+    // Prevent volume bar from bouncing around near the bottom when the
+    // room is otherwise quiet
+    if (newVolPercentage < 1) {
+        newVolPercentage = 0;
     }
 
-    if (Math.abs(volumeMeterLevel - newVol) > 1) {
-        volumeMeterLevel = newVol;
+    // Only update the volume meter if the difference is above 1%
+    if (Math.abs(volumeMeterLevel - newVolPercentage) > 1) {
+        volumeMeterLevel = newVolPercentage;
         const meter = document.querySelector('.voicemeter');
-        meter.style.width = `${newVol}%`;
+        meter.style.width = `${newVolPercentage}%`;
     }
 
     let voicemeterWrapper = document.querySelector('.voicemeter-wrapper');
 
-    if (vol > ponyTrainer.recorder.recordVol) {
+    // Make the bar glow while recording
+    if (currentVol > ponyTrainer.recorder.recordVol) {
         voicemeterWrapper.classList.add('recording');
     } else if (!ponyTrainer.recorder.isRecording()) {
         voicemeterWrapper.classList.remove('recording');
     }
 }
 
-setInterval(updateVolumeMeter, 50);
+setInterval(updateVolumeMeter, VOLUME_METER_UPDATE_MS);
 
 function slope(x, k) {
     return (Math.exp(k * x) - 1) / (Math.exp(k) - 1);
@@ -224,7 +230,7 @@ function updateProgressBar() {
     }
 }
 
-setInterval(updateProgressBar, 200);
+setInterval(updateProgressBar, PROGRESS_BAR_UPDATE_MS);
 
 function rewardPony() {
     explodePonies();
